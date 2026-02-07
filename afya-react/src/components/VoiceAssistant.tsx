@@ -1,5 +1,7 @@
-import { Mic, Send, MessageCircle, Volume2, Copy, Download } from 'lucide-react';
+import { Mic, Send, MessageCircle, Volume2, Copy, Settings } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { getInworldClient, createInworldClient } from '../utils/inworld';
+import { InworldSettingsModal } from './InworldSettingsModal';
 
 interface Message {
   id: string;
@@ -13,13 +15,13 @@ export function VoiceAssistant() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [useInworld, setUseInworld] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const recognitionRef = useRef<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const synthRef = useRef<SpeechSynthesis | null>(null);
-
-  // Initialize Web Speech API
+  const synthRef = useRef<Spee and check Inworld config
   useEffect(() => {
     const SpeechRecognition = window.webkitSpeechRecognition || (window as any).SpeechRecognition;
     if (SpeechRecognition) {
@@ -46,6 +48,14 @@ export function VoiceAssistant() {
     }
 
     synthRef.current = window.speechSynthesis;
+
+    // Check if Inworld is configured
+    const client = getInworldClient();
+    if (client.isConfigured()) {
+      setUseInworld(true);
+    }
+
+    synthRef.current = window.speechSynthesis;
   }, []);
 
   // Auto-scroll to bottom
@@ -69,35 +79,31 @@ export function VoiceAssistant() {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      role: 'user',
-      text: input,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const userInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      // Call backend API
-      const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${apiUrl}/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: input,
-          context: 'clinical-decision-support',
-        }),
-      });
+      const client = getInworldClient();
+      let responseText = '';
 
-      const data = await response.json();
+      if (useInworld && client.isConfigured()) {
+        // Use Inworld AI
+        try {
+          responseText = await client.sendMessage(userInput);
+        } catch (error) {
+          console.error('Inworld error, falling back:', error);
+          responseText = clinicalResponseGenerator(userInput);
+        }
+      } else {
+        // Use fallback clinical response
+        responseText = clinicalResponseGenerator(userInput);
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        text: data.message || 'I couldn\'t process that. Please try again.',
+        text: responseText,
         timestamp: new Date(),
       };
 
@@ -107,8 +113,14 @@ export function VoiceAssistant() {
       speakText(assistantMessage.text);
     } catch (error) {
       console.error('Error:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 2).toString(),
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSettingsSave = (settings: any) => {
+    createInworldClient(settings);
+    setUseInworld(true);   id: (Date.now() + 2).toString(),
         role: 'assistant',
         text: 'Sorry, I couldn\'t connect to the AI service. Make sure the backend is running on http://localhost:5000',
         timestamp: new Date(),
@@ -137,14 +149,30 @@ export function VoiceAssistant() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
-    }
-  };
-
-  return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
+      sendMessage();justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-gradient-to-br from-primary-500 to-accent-600 rounded-xl text-white">
+              <MessageCircle size={24} />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Afya Voice Assistant</h1>
+              <p className="text-sm text-gray-600">
+                {useInworld ? '🧠 Powered by Inworld AI' : 'Clinical support & guidance'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowSettings(true)}
+            className={`p-3 rounded-xl transition flex items-center gap-2 font-medium ${
+              useInworld
+                ? 'bg-green-100 text-success hover:bg-green-200'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+            title="Configure Inworld AI"
+          >
+            <Settings size={20} />
+            {useInworld ? 'Configured' : 'Configure AI'}
+          </buttonsName="bg-white border-b border-gray-200 px-6 py-4">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-gradient-to-br from-primary-500 to-accent-600 rounded-xl text-white">
             <MessageCircle size={24} />
@@ -260,6 +288,13 @@ export function VoiceAssistant() {
             className="flex-1 p-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
 
+
+      {/* Inworld Settings Modal */}
+      <InworldSettingsModal
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+        onSave={handleSettingsSave}
+      />
           <button
             onClick={sendMessage}
             disabled={!input.trim() || isLoading}

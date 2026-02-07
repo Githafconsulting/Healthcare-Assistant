@@ -14,6 +14,7 @@ CORS(app)
 HF_API_TOKEN = os.getenv('HUGGINGFACE_API_TOKEN', '')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
 CLAUDE_API_KEY = os.getenv('CLAUDE_API_KEY', '')
+INWORLD_API_BASE = 'https://api.inworld.ai/v1'
 
 # Free Hugging Face models for clinical conversation
 HF_MODELS = {
@@ -218,6 +219,92 @@ def synthesis():
             'audio_url': '/api/audio/placeholder.mp3'
         })
 
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/inworld/chat', methods=['POST'])
+def inworld_chat():
+    """Proxy Inworld AI requests for security"""
+    try:
+        data = request.json
+        message = data.get('message', '')
+        api_key = data.get('apiKey', '')
+        workspace_id = data.get('workspaceId', '')
+        character_id = data.get('characterId', '')
+
+        if not all([message, api_key, workspace_id, character_id]):
+            return jsonify({'error': 'Missing required fields'}), 400
+
+        # Initialize session
+        session_url = f"{INWORLD_API_BASE}/sessions:create"
+        session_headers = {
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+        }
+        session_body = {
+            'user': {'name': 'CHW'},
+            'character': {
+                'resourceName': f'workspaces/{workspace_id}/characters/{character_id}'
+            }
+        }
+
+        session_response = requests.post(
+            session_url,
+            headers=session_headers,
+            json=session_body,
+            timeout=30
+        )
+
+        if session_response.status_code != 200:
+            return jsonify({
+                'error': f'Failed to initialize session: {session_response.status_code}',
+                'details': session_response.text
+            }), 500
+
+        session_data = session_response.json()
+        session_id = session_data.get('session', {}).get('sessionId', '')
+
+        if not session_id:
+            return jsonify({'error': 'No session ID received'}), 500
+
+        # Send message
+        message_url = f"{INWORLD_API_BASE}/sessions/{session_id}:sendText"
+        message_response = requests.post(
+            message_url,
+            headers=session_headers,
+            json={'text': message},
+            timeout=30
+        )
+
+        if message_response.status_code != 200:
+            return jsonify({
+                'error': f'Failed to send message: {message_response.status_code}',
+                'details': message_response.text
+            }), 500
+
+        response_data = message_response.json()
+        
+        # Extract response text
+        response_text = 'No response from Inworld AI'
+        
+        if response_data.get('text', {}).get('text'):
+            response_text = response_data['text']['text']
+        elif response_data.get('packets'):
+            for packet in response_data['packets']:
+                if packet.get('text', {}).get('text'):
+                    response_text = packet['text']['text']
+                    break
+
+        return jsonify({
+            'message': response_text,
+            'sessionId': session_id,
+            'success': True
+        })
+
+    except requests.exceptions.Timeout:
+        return jsonify({'error': 'Request timeout'}), 504
+    except requests.exceptions.RequestException as e:
+        return jsonify({'error': f'Request failed: {str(e)}'}), 500
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
