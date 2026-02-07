@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Afya Assistant</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_patients">Patients</string>
+    <string name="nav_visits">Visits</string>
+    <string name="nav_sync">Sync</string>
+    <string name="nav_settings">Settings</string>
+    
+    <!-- Common Actions -->
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_confirm">Confirm</string>
+    <string name="action_back">Back</string>
+    <string name="action_next">Next</string>
+    <string name="action_search">Search</string>
+    <string name="action_voice_input">Voice Input</string>
+    
+    <!-- Patient -->
+    <string name="patient_new">New Patient</string>
+    <string name="patient_search">Search Patients</string>
+    <string name="patient_details">Patient Details</string>
+    
+    <!-- Visit -->
+    <string name="visit_new">New Visit</string>
+    <string name="visit_history">Visit History</string>
+    <string name="visit_in_progress">Visit in Progress</string>
+    
+    <!-- Clinical -->
+    <string name="danger_sign_alert">DANGER SIGN DETECTED</string>
+    <string name="referral_required">Referral Required</string>
+    <string name="ai_suggestion">AI Suggestion</string>
+    <string name="guideline_reference">Guideline Reference</string>
+    
+    <!-- Sync -->
+    <string name="sync_status">Sync Status</string>
+    <string name="sync_pending">Pending: %d items</string>
+    <string name="sync_last">Last sync: %s</string>
+    <string name="sync_now">Sync Now</string>
+    <string name="sync_offline">Offline - Will sync when connected</string>
+    
+    <!-- Voice -->
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_processing">Processing…</string>
+    <string name="voice_tap_to_speak">Tap to speak</string>
+    <string name="voice_confirm_text">Please confirm the text below</string>
+    
+    <!-- Errors -->
+    <string name="error_network">Network error. Please try again.</string>
+    <string name="error_database">Database error. Please restart the app.</string>
+    <string name="error_voice">Voice recognition failed. Try again or type manually.</string>
+</resources>

@@ -1,0 +1,3213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Afya Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://sdk.inworld.ai/web/latest/inworld.js"></script>
+    <style>
+        :root {
+            --primary: #7C3AED;
+            --primary-dark: #6D28D9;
+            --primary-light: #F3E8FF;
+            --secondary: #06B6D4;
+            --secondary-dark: #0891B2;
+            --secondary-light: #CFFAFE;
+            --success: #10B981;
+            --success-soft: #D1FAE5;
+            --danger: #EF4444;
+            --danger-soft: #FEE2E2;
+            --warn: #F59E0B;
+            --warn-soft: #FEF3C7;
+            --accent: #EC4899;
+            --accent-light: #FCE7F3;
+            --text: #0F172A;
+            --text-muted: #64748B;
+            --border: #E2E8F0;
+            --bg: #F8FAFC;
+            --bg-card: #FFFFFF;
+            --shadow: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-card: 0 4px 16px rgba(124, 58, 237, 0.12);
+            --shadow-hover: 0 8px 24px rgba(124, 58, 237, 0.15);
+            --radius: 20px;
+            --radius-sm: 14px;
+            --radius-full: 9999px;
+            --font: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: var(--font);
+            font-weight: 500;
+            background: var(--bg);
+            min-height: 100vh;
+            max-width: 480px;
+            margin: 0 auto;
+            color: var(--text);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+            padding-bottom: 20px;
+            overflow-x: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #7C3AED 0%, #EC4899 100%);
+            color: white;
+            padding: 24px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 101;
+            font-family: var(--font);
+            box-shadow: 0 8px 32px rgba(124, 58, 237, 0.15);
+        }
+        
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            flex: 1;
+            text-align: center;
+            margin: 0;
+        }
+        
+        .back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .back-btn:hover, .back-btn:active {
+            background: rgba(255,255,255,0.4);
+        }
+        .back-btn.visible { display: flex; }
+        
+        .header-profile {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: auto;
+        }
+        .header-profile-photo {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.6);
+            background: rgba(255,255,255,0.3);
+        }
+        .header-profile-photo.placeholder {
+            object-fit: none;
+            background: rgba(255,255,255,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: white;
+        }
+        .header-profile-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: white;
+            max-width: 88px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .sync-status {
+            font-size: 12px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            margin-left: 6px;
+        }
+        
+        .screen {
+            display: none;
+            padding: 32px 20px 60px;
+            min-height: calc(100vh - 100px);
+            animation: fadeIn 0.4s ease;
+            position: relative;
+            z-index: 1;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .screen.active { display: block; }
+        
+        .screen h2 {
+            font-family: var(--font);
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+            line-height: 1.1;
+        }
+        
+        .screen h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+        
+        #login-screen { 
+            padding: 0 !important; 
+            min-height: 100vh !important;
+        }
+        .login-hero {
+            text-align: center;
+            padding: 100px 24px 80px;
+            color: white;
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #EC4899 100%);
+            box-shadow: 0 12px 40px rgba(124, 58, 237, 0.25);
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-logo {
+            font-size: 80px;
+            margin-bottom: 32px;
+            line-height: 1;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-12px); }
+        }
+        .login-hero h2 {
+            font-family: var(--font);
+            font-size: 40px;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 12px;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+        .login-tagline {
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+            line-height: 1.5;
+            max-width: 280px;
+        }
+        
+        #login-screen .login-prompt {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 24px;
+            padding: 32px 20px 0;
+        }
+        
+        #login-screen .login-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding: 0 20px 32px;
+        }
+        
+        .login-role-btn {
+            width: 100%;
+            padding: 24px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font);
+            border-radius: var(--radius-full);
+            border: none;
+            background: white;
+            color: var(--text);
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        .login-role-btn:hover { 
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+        }
+        .login-role-btn:active {
+            transform: translateY(-2px);
+        }
+        .login-role-btn i { font-size: 22px; }
+        
+        .welcome-block {
+            background: white;
+            border-radius: var(--radius);
+            padding: 40px;
+            margin: -60px 20px 32px;
+            box-shadow: 0 12px 32px rgba(124, 58, 237, 0.15);
+            position: relative;
+            z-index: 2;
+            border: none;
+        }
+        .welcome-greeting {
+            font-family: var(--font);
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+            letter-spacing: -0.04em;
+            line-height: 1;
+        }
+        .welcome-location {
+            font-size: 16px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .welcome-location .pin { font-size: 18px; }
+        
+        .new-visit-btn {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 28px 32px;
+            font-size: 20px;
+            font-weight: 700;
+            font-family: var(--font);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            box-shadow: 0 16px 40px rgba(124, 58, 237, 0.35);
+            transition: all 0.2s ease;
+            margin: 32px 20px 0;
+            letter-spacing: -0.01em;
+        }
+        .new-visit-icon { font-size: 24px; }
+        .new-visit-btn:hover {
+            box-shadow: 0 20px 48px rgba(124, 58, 237, 0.45);
+            transform: translateY(-4px);
+        }
+        .new-visit-btn:active { transform: translateY(-2px); }
+        
+        .recent-patients { 
+            margin-top: 48px;
+            padding: 0 20px;
+        }
+        
+        .recent-patients h2 {
+            font-family: var(--font);
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+        
+        .patient-card {
+            background: white;
+            padding: 28px;
+            border-radius: var(--radius);
+            margin-bottom: 16px;
+            cursor: pointer;
+            border: 1.5px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+        }
+        .patient-card:hover {
+            box-shadow: 0 12px 32px rgba(124, 58, 237, 0.15);
+            transform: translateY(-6px);
+            border-color: var(--primary);
+        }
+        .patient-card .name {
+            font-family: var(--font);
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text);
+            letter-spacing: -0.01em;
+            margin-bottom: 2px;
+        }
+        .patient-card .details {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-top: 8px;
+            font-weight: 500;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 22px 26px;
+            font-size: 18px;
+            font-family: var(--font);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-full);
+            margin-bottom: 32px;
+            background: white;
+            color: var(--text);
+            transition: all 0.2s ease;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+        }
+        .search-input::placeholder { 
+            color: var(--text-muted); 
+            font-weight: 500;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+        }
+        .create-new-btn {
+            background: white;
+            color: var(--primary);
+            border: 2.5px dashed var(--primary);
+            width: 100%;
+            padding: 24px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: -0.01em;
+        }
+        .create-new-btn:hover {
+            background: rgba(124, 58, 237, 0.08);
+            transform: translateY(-2px);
+        }
+        .create-new-btn i { margin-right: 10px; font-size: 18px; }
+        
+        .form-group { margin-bottom: 32px; }
+        .form-group label {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 14px;
+            letter-spacing: -0.01em;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 18px 24px;
+            font-size: 17px;
+            font-family: var(--font);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            color: var(--text);
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+        .sex-buttons { 
+            display: flex; 
+            gap: 16px; 
+        }
+        .sex-btn {
+            flex: 1;
+            padding: 18px 20px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: var(--font);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sex-btn:hover {
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, 0.05);
+        }
+        .sex-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary);
+            color: white;
+            font-weight: 700;
+        }
+        .primary-btn {
+            background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 24px 32px;
+            font-size: 18px;
+            font-weight: 800;
+            font-family: var(--font);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            margin-top: 40px;
+            box-shadow: 0 16px 40px rgba(124, 58, 237, 0.35);
+            transition: all 0.2s ease;
+            letter-spacing: -0.02em;
+        }
+        .primary-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--text-muted);
+            box-shadow: none;
+        }
+        .primary-btn:hover:not(:disabled) {
+            box-shadow: 0 20px 52px rgba(124, 58, 237, 0.45);
+            transform: translateY(-5px);
+        }
+        .primary-btn:active:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(124, 58, 237, 0.3);
+        }
+        
+        .patient-banner {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius);
+            margin-bottom: 32px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .patient-banner .name {
+            font-family: var(--font);
+            font-weight: 700;
+            font-size: 22px;
+            color: var(--text);
+            letter-spacing: -0.02em;
+        }
+        .patient-banner .age {
+            color: var(--text-muted);
+            font-size: 15px;
+            margin-top: 6px;
+        }
+        .voice-section { text-align: center; padding: 40px 0; }
+        .voice-btn {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #06B6D4 0%, #0891B2 100%);
+            border: none;
+            color: white;
+            font-size: 64px;
+            cursor: pointer;
+            box-shadow: 0 16px 48px rgba(6, 182, 212, 0.35);
+            transition: all 0.2s ease;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .voice-btn:hover {
+            transform: scale(1.12);
+            box-shadow: 0 20px 60px rgba(6, 182, 212, 0.45);
+        }
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+            box-shadow: 0 16px 48px rgba(239, 68, 68, 0.4);
+            animation: recordingPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes recordingPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 16px 48px rgba(239, 68, 68, 0.4); }
+            50% { transform: scale(1.08); box-shadow: 0 20px 60px rgba(239, 68, 68, 0.6); }
+        }
+        
+        .voice-hint {
+            color: var(--text-muted);
+            margin-top: 20px;
+            font-size: 16px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .transcript-box {
+            background: white;
+            padding: 28px;
+            border-radius: var(--radius);
+            min-height: 140px;
+            margin: 28px 0;
+            font-size: 17px;
+            line-height: 1.7;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            color: var(--text);
+        }
+        
+        .transcript-box.empty {
+            color: var(--text-muted);
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
+        }
+        
+        .symptoms-section h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 16px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        
+        .symptom-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        
+        .symptom-chip {
+            padding: 14px 20px;
+            border-radius: var(--radius-full);
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            border: 1.5px solid var(--border);
+            background: white;
+            transition: all 0.2s ease;
+        }
+        .symptom-chip:hover {
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, 0.05);
+        }
+            background: var(--bg-card);
+            color: var(--text);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .symptom-chip i { font-size: 16px; }
+        
+        .symptom-chip:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        
+        .symptom-chip.selected {
+            background: linear-gradient(135deg, #FF5722 0%, #FF7043 100%);
+            border-color: #FF5722;
+            color: white;
+        }
+        
+        .symptom-chip.selected i { color: white; }
+        
+        .selected-symptoms {
+            margin-top: 28px;
+        }
+        
+        .selected-symptom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            background: rgba(124, 58, 237, 0.08);
+            border-radius: var(--radius-sm);
+            margin-bottom: 10px;
+            border-left: 3px solid #7C3AED;
+        }
+        
+        .selected-symptom .remove {
+            color: #EF4444;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .selected-symptom .remove:hover {
+            opacity: 1;
+        }
+        
+        /* Vitals Section */
+        .vitals-section {
+            margin-top: 28px;
+            padding-top: 28px;
+            border-top: 1.5px solid var(--border);
+        }
+        
+        .vitals-section h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        
+        .vital-input {
+            padding: 14px 18px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-family: inherit;
+            width: 100%;
+            background: var(--bg-card);
+            color: var(--text);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .vital-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+        
+        /* Structured notes screen */
+        .structured-section {
+            margin-bottom: 24px;
+        }
+        .structured-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        .structured-field {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .structured-input, .structured-textarea {
+            flex: 1;
+            min-width: 0;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-family: inherit;
+            background: var(--bg-card);
+            color: var(--text);
+        }
+        .structured-input:focus, .structured-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .structured-textarea {
+            width: 100%;
+            resize: vertical;
+            min-height: 90px;
+        }
+        .confidence-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-weight: 600;
+        }
+        .conf-high { color: #10B981; }
+        .conf-med { color: #F59E0B; }
+        .conf-low { color: #EF4444; }
+        .warnings-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 146, 60, 0.05) 100%);
+            border: 1.5px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-sm);
+            padding: 14px 18px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: var(--text);
+        }
+        
+        /* Suggestions Screen */
+        .suggestion-card {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s;
+        }
+        
+        .suggestion-card:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .suggestion-card.urgent {
+            border-color: rgba(239, 68, 68, 0.3);
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.05) 0%, rgba(220, 38, 38, 0.02) 100%);
+        }
+        
+        .suggestion-card .badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .suggestion-card .badge.treatment {
+            background: rgba(124, 58, 237, 0.15);
+            color: #7C3AED;
+        }
+        
+        .suggestion-card .badge.danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #EF4444;
+        }
+        
+        .suggestion-card .badge.referral {
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+        }
+        
+        .suggestion-card h3 {
+            font-family: var(--font);
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+        
+        .suggestion-card .description {
+            font-size: 15px;
+            color: var(--text);
+            margin-bottom: 14px;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+        
+        .suggestion-card .reason {
+            font-size: 13px;
+            color: var(--text-muted);
+            background: rgba(124, 58, 237, 0.05);
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 14px;
+            border-left: 3px solid #7C3AED;
+        }
+        
+        .suggestion-card .reason strong {
+            color: var(--text);
+        }
+        
+        .suggestion-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .accept-btn {
+            flex: 1;
+            padding: 16px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .accept-btn:hover {
+            box-shadow: 0 10px 24px rgba(16, 185, 129, 0.35);
+            transform: translateY(-2px);
+        }
+        
+        .accept-btn:active {
+            transform: translateY(0);
+        }
+        
+        .skip-btn {
+            padding: 14px 20px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .skip-btn:hover { 
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, 0.05);
+            color: var(--text);
+        }
+        
+        .suggestion-card.decided {
+            opacity: 0.85;
+        }
+        
+        .suggestion-card.decided .decision-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: var(--radius-full);
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .decision-badge.accepted {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .decision-badge.skipped {
+            background: var(--text-muted);
+            color: white;
+        }
+        
+        /* Summary Screen */
+        .summary-section {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 22px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        .summary-section::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #7C3AED 0%, #EC4899 100%);
+            border-radius: 4px 0 0 4px;
+        }
+        
+        .summary-section h3 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 10px;
+        }
+        
+        .summary-section ul {
+            list-style: none;
+        }
+        
+        .summary-section li {
+            padding: 6px 0;
+            font-size: 15px;
+            color: var(--text);
+        }
+        
+        .summary-section li::before {
+            content: "✓ ";
+            color: #10B981;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+        
+        .followup-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        
+        .followup-btn {
+            padding: 14px 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            color: var(--text);
+            transition: all 0.2s;
+        }
+        
+        .followup-btn.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary-dark);
+        }
+        
+        .complete-btn {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 22px;
+            font-size: 18px;
+            font-weight: 700;
+            font-family: var(--font);
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin-top: 28px;
+            box-shadow: 0 12px 28px rgba(16, 185, 129, 0.35);
+            transition: transform 0.15s, box-shadow 0.2s;
+        }
+        .complete-btn:hover { 
+            box-shadow: 0 16px 40px rgba(16, 185, 129, 0.45); 
+            transform: translateY(-3px); 
+        }
+        .complete-btn:active { transform: translateY(-1px); }
+        
+        /* Success Screen */
+        .success-screen {
+            text-align: center;
+            padding-top: 48px;
+        }
+        
+        .success-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 28px;
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 56px;
+            color: white;
+            box-shadow: 0 12px 32px rgba(16, 185, 129, 0.35);
+            animation: successPulse 0.6s ease-out;
+        }
+        
+        @keyframes successPulse {
+            0% {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .success-screen h2 {
+            font-family: var(--font);
+            font-size: 28px;
+            font-weight: 700;
+            color: #10B981;
+            margin-bottom: 12px;
+        }
+        
+        .success-screen p {
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            font-size: 16px;
+            white-space: pre-line;
+        }
+        
+        /* Skip Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(17, 24, 39, 0.6);
+            backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+        
+        .modal-overlay.visible {
+            display: flex;
+        }
+        
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 28px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .modal h3 {
+            font-family: var(--font);
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .skip-reason-btn {
+            display: block;
+            width: 100%;
+            padding: 16px 18px;
+            margin-bottom: 10px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            text-align: left;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .skip-reason-btn:hover {
+            border-color: var(--primary);
+            background: rgba(124, 58, 237, 0.05);
+        }
+        
+        .skip-reason-btn:active {
+            background: rgba(124, 58, 237, 0.1);
+        }
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        
+        .skip-reason-btn:hover {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
+        
+        .skip-reason-btn:active {
+            background: var(--primary-light);
+        }
+        
+        /* Login */
+        .header.hidden { display: none; }
+        #login-screen .login-options { display: flex; flex-direction: column; gap: 14px; margin-top: 32px; }
+        .login-role-btn {
+            width: 100%;
+            padding: 24px;
+            font-size: 18px;
+            font-weight: 600;
+            font-family: var(--font);
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+        }
+        .login-role-btn:hover { border-color: var(--primary); background: var(--primary-light); transform: translateY(-2px); }
+        .login-role-btn.doctor { border-left: 4px solid var(--warn); }
+        .login-role-btn.chw { border-left: 4px solid var(--primary); }
+        .login-role-btn i { margin-right: 8px; font-size: 18px; }
+        .notes-card { background: var(--bg-card); border-radius: var(--radius); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); }
+        .notes-card h3 { font-size: 15px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+        .notes-card p, .notes-card ul { font-size: 16px; line-height: 1.5; color: var(--text); }
+        .notes-card ul { margin: 0; padding-left: 20px; }
+        .doctor-visit-row { background: var(--bg-card); padding: 16px 20px; border-radius: var(--radius); margin-bottom: 10px; cursor: pointer; border-left: 4px solid var(--primary); box-shadow: var(--shadow); }
+        .doctor-visit-row:hover { background: var(--primary-light); }
+        .logout-btn { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 16px; border-radius: var(--radius-sm); font-size: 14px; cursor: pointer; margin-top: 20px; }
+        .logout-btn:hover { border-color: var(--text-muted); color: var(--text); }
+        .photo-section { margin-bottom: 20px; }
+        .photo-section h3 { font-size: 15px; color: var(--text-muted); margin-bottom: 10px; }
+        .photo-row { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+        .photo-btn { background: var(--bg-card); border: 2px dashed var(--border); color: var(--text-muted); padding: 16px 20px; border-radius: var(--radius); font-size: 15px; cursor: pointer; min-width: 140px; }
+        .photo-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .photo-btn i { margin-right: 6px; font-size: 16px; }
+        .photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); border: 2px solid var(--border); }
+        .photo-remove { font-size: 13px; color: var(--danger); cursor: pointer; text-decoration: underline; }
+        .chw-photo-group { margin-bottom: 24px; }
+        .chw-photo-group label { display: block; font-size: 14px; font-weight: 600; color: var(--text-muted); margin-bottom: 10px; }
+        .chw-photo-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+        .chw-photo-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chw-photo-placeholder { font-size: 36px; color: var(--text-muted); }
+        .chw-photo-img { width: 100%; height: 100%; object-fit: cover; }
+        .progress-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+        .progress-photos .notes-card { margin-bottom: 0; }
+        .progress-photos img { width: 100%; max-height: 200px; object-fit: cover; border-radius: var(--radius-sm); }
+        .patient-profile-header {
+            background: linear-gradient(138deg, var(--primary-light) 0%, #dce8e4 100%);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+        .patient-profile-header::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+            border-radius: 4px 0 0 4px;
+        }
+        .patient-profile-header .name { font-family: var(--font); font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .patient-profile-header .meta { font-size: 15px; color: var(--text-muted); }
+        .history-section h3 { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 12px; }
+        .history-visit-card { 
+            background: var(--bg-card); 
+            border-radius: var(--radius); 
+            padding: 18px; 
+            margin-bottom: 12px; 
+            border-left: 3px solid #7C3AED; 
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s;
+        }
+        .history-visit-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .history-visit-card .date { 
+            font-weight: 600; 
+            color: var(--text); 
+            font-size: 15px; 
+        }
+        .history-visit-card .summary { 
+            font-size: 14px; 
+            color: var(--text-muted); 
+            margin-top: 6px; 
+        }
+        .history-visit-card .treatments { 
+            font-size: 13px; 
+            color: #10B981; 
+            margin-top: 4px; 
+            font-weight: 500;
+        }
+        .client-profile-card {
+            background: linear-gradient(138deg, var(--primary-light) 0%, #dce8e4 100%);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .client-profile-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+            border-radius: 4px 0 0 4px;
+        }
+        .client-profile-card h3 { font-size: 12px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 10px; }
+        .client-profile-card .profile-summary { font-size: 15px; line-height: 1.5; color: var(--text); margin-bottom: 12px; }
+        .client-profile-card .profile-bullets { font-size: 14px; color: var(--text); line-height: 1.5; padding-left: 18px; margin: 0; }
+        .client-profile-card .profile-bullets li { margin-bottom: 4px; }
+        .suggestion-followup { border-left-color: var(--warn) !important; }
+        .followup-suggest-label { font-size: 13px; color: var(--warn); font-weight: 600; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <div class="header" id="main-header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1>Afya Assistant</h1>
+        <div class="header-profile" id="header-profile" style="display: none;">
+            <span class="header-profile-photo placeholder" id="header-profile-photo-initials"></span>
+            <img class="header-profile-photo" id="header-profile-photo" alt="" src="" referrerpolicy="no-referrer" style="display: none;">
+            <span class="header-profile-name" id="header-profile-name"></span>
+        </div>
+        <button style="background: rgba(255,255,255,0.25); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; margin-left: 8px;" onclick="openInworldSettings()" title="AI Settings">
+            <i class="fas fa-microchip"></i>
+        </button>
+        <span class="sync-status" id="sync-status">Saved on device</span>
+    </div>
+
+    <!-- Login screen (shown first when not logged in) -->
+    <div id="login-screen" class="screen active">
+        <div class="login-hero">
+            <div class="login-logo"><i class="fas fa-heart-pulse" style="color: #fff; font-size: 52px;"></i></div>
+            <h2>Afya Assistant</h2>
+            <p class="login-tagline">Your companion in the community</p>
+        </div>
+        <p class="login-prompt">Sign in as</p>
+        <div class="login-options">
+            <button type="button" class="login-role-btn chw" onclick="showChwSetup()"><i class="fas fa-user-nurse"></i> Community Health Worker</button>
+            <button type="button" class="login-role-btn doctor" onclick="loginAs('Doctor')"><i class="fas fa-user-md"></i> Doctor</button>
+        </div>
+    </div>
+
+    <!-- CHW setup: name + location + photo (shown after tapping CHW on login) -->
+    <div id="chw-setup-screen" class="screen">
+        <h2>Welcome</h2>
+        <p class="setup-sub">Tell us who you are</p>
+        <div class="form-group chw-photo-group">
+            <label>Your photo</label>
+            <input type="file" id="chw-photo-input" accept="image/*" capture="user" style="display: none;" onchange="handleChwPhotoSelect(event)">
+            <div class="chw-photo-row">
+                <div class="chw-photo-preview" id="chw-photo-preview">
+                    <span class="chw-photo-placeholder" id="chw-photo-placeholder">👤</span>
+                    <img id="chw-photo-img" class="chw-photo-img" alt="" style="display: none;">
+                </div>
+                <button type="button" class="photo-btn" onclick="document.getElementById('chw-photo-input').click()">📷 Add photo</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Your name</label>
+            <input type="text" id="chw-name" placeholder="e.g. Jane">
+        </div>
+        <div class="form-group">
+            <label>Your location / area</label>
+            <input type="text" id="chw-location" placeholder="e.g. Kijiji">
+        </div>
+        <button type="button" class="primary-btn" onclick="saveChwProfileAndGoHome()">Continue</button>
+    </div>
+
+    <!-- Screen 1: Home (CHW) -->
+    <div id="home-screen" class="screen">
+        <div class="welcome-block">
+            <p class="welcome-greeting">Welcome, <span id="chw-welcome-name">Jane</span></p>
+            <p class="welcome-location"><span class="pin">📍</span> <span id="chw-welcome-location">Kijiji</span></p>
+        </div>
+        <button class="new-visit-btn" onclick="showScreen('search')">
+            <span class="new-visit-icon"><i class="fas fa-plus"></i></span>
+            New Visit
+        </button>
+        
+        <div class="recent-patients">
+            <h2>Recent Patients</h2>
+            <div id="recent-list"></div>
+        </div>
+        
+        <div class="recent-patients" style="margin-top: 32px;">
+            <h2>Recent Visits</h2>
+            <div id="recent-visits-list"></div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Patient Search -->
+    <div id="search-screen" class="screen">
+        <h2>Find Patient</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">Search by name or create a new patient</p>
+        <input type="text" class="search-input" placeholder="Type patient name..." 
+               id="search-input" oninput="searchPatients()">
+        
+        <div id="search-results"></div>
+        
+        <button class="create-new-btn" onclick="showScreen('create')">
+            <i class="fas fa-user-plus"></i> Create New Patient
+        </button>
+    </div>
+
+    <!-- Screen 2b: Create Patient -->
+    <div id="create-screen" class="screen">
+        <h2>New Patient</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 24px;">Register then start the visit</p>
+        
+        <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="new-name" placeholder="e.g. Maria Okonkwo">
+        </div>
+        
+        <div class="form-group">
+            <label>Date of Birth</label>
+            <input type="date" id="new-dob">
+        </div>
+        
+        <div class="form-group">
+            <label>Sex</label>
+            <div class="sex-buttons">
+                <button class="sex-btn" onclick="selectSex('MALE', this)">Male</button>
+                <button class="sex-btn" onclick="selectSex('FEMALE', this)">Female</button>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label>Village</label>
+            <select id="new-village">
+                <option value="">Select village...</option>
+                <option value="Kijiji">Kijiji</option>
+                <option value="Mwanzo">Mwanzo</option>
+                <option value="Upendo">Upendo</option>
+                <option value="Amani">Amani</option>
+            </select>
+        </div>
+        
+        <button class="primary-btn" onclick="createPatient()">Create & Start Visit</button>
+    </div>
+
+    <!-- Patient profile: AI client profile + history + start new visit -->
+    <div id="patient-profile-screen" class="screen">
+        <div class="patient-profile-header">
+            <div class="name" id="profile-patient-name">-</div>
+            <div class="meta" id="profile-patient-meta">-</div>
+        </div>
+        <div id="profile-client-summary" class="client-profile-card" style="display: none;">
+            <h3>Client profile (from visit history)</h3>
+            <p class="profile-summary" id="profile-summary-text"></p>
+            <ul class="profile-bullets" id="profile-bullets-list"></ul>
+        </div>
+        <div class="history-section">
+            <h3>Visit history</h3>
+            <div id="profile-visits-list"></div>
+        </div>
+        <button class="primary-btn" onclick="startVisitFromProfile()">Start new visit</button>
+    </div>
+
+    <!-- Screen 3: Capture -->
+    <div id="capture-screen" class="screen">
+        <div class="patient-banner">
+            <div class="name" id="capture-patient-name">-</div>
+            <div class="age" id="capture-patient-age">-</div>
+        </div>
+        
+        <div class="photo-section">
+            <h3>Photo before (optional)</h3>
+            <div class="photo-row">
+                <input type="file" id="photo-before-input" accept="image/*" capture="environment" style="display: none;" onchange="handlePhotoInput('before')">
+                <button type="button" class="photo-btn" onclick="document.getElementById('photo-before-input').click()"><i class="fas fa-camera"></i> Take / choose</button>
+                <span id="photo-before-thumb"></span>
+                <span id="photo-before-remove" class="photo-remove" style="display: none;" onclick="clearPhoto('before')">Remove</span>
+            </div>
+        </div>
+        
+        <div class="photo-section">
+            <h3>Photo after (optional)</h3>
+            <div class="photo-row">
+                <input type="file" id="photo-after-input" accept="image/*" capture="environment" style="display: none;" onchange="handlePhotoInput('after')">
+                <button type="button" class="photo-btn" onclick="document.getElementById('photo-after-input').click()"><i class="fas fa-camera"></i> Take / choose</button>
+                <span id="photo-after-thumb"></span>
+                <span id="photo-after-remove" class="photo-remove" style="display: none;" onclick="clearPhoto('after')">Remove</span>
+            </div>
+        </div>
+        
+        <div class="voice-section">
+            <button type="button" class="voice-btn" id="voice-btn" onclick="toggleVoice()"><i class="fas fa-microphone" style="font-size: 52px;"></i></button>
+            <p class="voice-hint" id="voice-hint">Tap to describe the problem</p>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">
+                <input type="checkbox" id="use-inworld-ai" style="margin-right: 4px;">
+                <label for="use-inworld-ai" style="cursor: pointer;">Use AI conversational mode (Inworld)</label>
+            </p>
+        </div>
+        
+        <div class="transcript-box empty" id="transcript">
+            Transcript will appear here...
+        </div>
+        
+        <!-- Danger Sign Alert -->
+        <div class="danger-alert" id="danger-alert">
+            <h3><i class="fas fa-triangle-exclamation"></i> POSSIBLE DANGER SIGN</h3>
+            <p id="danger-message">Please check: Can the child drink or breastfeed?</p>
+            <div class="danger-buttons">
+                <button class="danger-btn yes" onclick="answerDanger(true)"><i class="fas fa-check"></i> Yes, can drink</button>
+                <button class="danger-btn no" onclick="answerDanger(false)"><i class="fas fa-times"></i> No, cannot</button>
+            </div>
+        </div>
+        
+        <div class="symptoms-section">
+            <h3>Or tap symptoms:</h3>
+            <div class="symptom-chips">
+                <button class="symptom-chip" onclick="toggleSymptom('Fever', this)"><i class="fas fa-thermometer-half"></i> Fever</button>
+                <button class="symptom-chip" onclick="toggleSymptom('Cough', this)"><i class="fas fa-lungs"></i> Cough</button>
+                <button class="symptom-chip" onclick="toggleSymptom('Diarrhea', this)"><i class="fas fa-droplet"></i> Diarrhea</button>
+                <button class="symptom-chip" onclick="toggleSymptom('Vomiting', this)"><i class="fas fa-wave"></i> Vomiting</button>
+                <button class="symptom-chip" onclick="toggleSymptom('Not eating', this)"><i class="fas fa-utensils"></i> Not eating</button>
+                <button class="symptom-chip" onclick="toggleSymptom('Fast breathing', this)"><i class="fas fa-wind"></i> Fast breathing</button>
+            </div>
+        </div>
+        
+        <div class="selected-symptoms" id="selected-symptoms"></div>
+        
+        <div class="vitals-section">
+            <h3>Vitals (optional)</h3>
+            <div class="vitals-grid">
+                <input type="number" class="vital-input" placeholder="Temp °C" id="vital-temp" step="0.1" min="35" max="42" inputmode="decimal">
+                <input type="number" class="vital-input" placeholder="Weight kg" id="vital-weight" step="0.1" min="0" max="100" inputmode="decimal">
+                <input type="number" class="vital-input" placeholder="MUAC mm" id="vital-muac" min="0" max="250" inputmode="numeric">
+                <input type="number" class="vital-input" placeholder="Resp rate /min" id="vital-resp-rate" min="0" max="80" inputmode="numeric">
+                <input type="number" class="vital-input" placeholder="Pulse /min" id="vital-pulse" min="0" max="250" inputmode="numeric">
+                <input type="text" class="vital-input" placeholder="BP e.g. 120/80" id="vital-bp" inputmode="numeric" maxlength="7">
+            </div>
+        </div>
+        
+        <button class="primary-btn" onclick="proceedToStructuredNotes()" id="continue-btn" disabled>
+            Continue →
+        </button>
+    </div>
+
+    <!-- Screen 3b: Review structured notes (from voice-to-structured design) -->
+    <div id="structured-notes-screen" class="screen">
+        <h2>Review notes</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">Check and edit what we understood. Confidence: <span class="conf-high">High</span> / <span class="conf-med">Medium</span> / <span class="conf-low">Low</span></p>
+        
+        <div class="structured-section">
+            <label class="structured-label">Chief complaint</label>
+            <div class="structured-field" id="field-chief-complaint">
+                <input type="text" id="edit-chief-complaint" class="structured-input">
+                <span class="confidence-badge" id="conf-chief-complaint"></span>
+            </div>
+        </div>
+        
+        <div class="structured-section">
+            <label class="structured-label">Symptoms</label>
+            <div id="structured-symptoms-list"></div>
+        </div>
+        
+        <div class="structured-section" id="red-flags-section">
+            <label class="structured-label">Red flags</label>
+            <div id="structured-redflags-list"></div>
+        </div>
+        
+        <div class="structured-section">
+            <label class="structured-label">Free text notes</label>
+            <textarea id="edit-free-text" class="structured-textarea" rows="3"></textarea>
+            <span class="confidence-badge" id="conf-free-text"></span>
+        </div>
+        
+        <div id="processing-warnings" class="warnings-box"></div>
+        
+        <button class="primary-btn" onclick="proceedToSuggestions()">Continue to suggestions →</button>
+    </div>
+
+    <!-- Screen 4: Suggestions -->
+    <div id="suggestions-screen" class="screen">
+        <h2>Suggestions</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">Review each suggestion and accept or skip</p>
+        <div id="suggestions-list"></div>
+        
+        <button class="primary-btn" onclick="proceedToSummary()" id="summary-btn" style="display: none;">
+            Continue to Summary →
+        </button>
+    </div>
+
+    <!-- Screen 5: Summary -->
+    <div id="summary-screen" class="screen">
+        <h2>Visit Summary</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">Confirm and complete the visit</p>
+        
+        <div class="summary-section">
+            <h3>Patient</h3>
+            <p id="summary-patient">-</p>
+        </div>
+        
+        <div class="summary-section">
+            <h3>Symptoms</h3>
+            <ul id="summary-symptoms"></ul>
+        </div>
+        
+        <div class="summary-section">
+            <h3>Treatment Given</h3>
+            <ul id="summary-treatment"></ul>
+        </div>
+        
+        <div class="summary-section">
+            <h3>Follow-up</h3>
+            <p id="followup-suggestion-text" class="followup-suggest-label" style="display: none;"></p>
+            <div class="followup-options">
+                <button class="followup-btn" id="followup-btn-2" onclick="selectFollowup(2, this)">2 days</button>
+                <button class="followup-btn" id="followup-btn-5" onclick="selectFollowup(5, this)">5 days</button>
+                <button class="followup-btn" id="followup-btn-0" onclick="selectFollowup(0, this)">No follow-up</button>
+            </div>
+        </div>
+        
+        <button class="complete-btn" onclick="completeVisit()">✓ Complete Visit</button>
+    </div>
+
+    <!-- Screen 6: Success -->
+    <div id="success-screen" class="screen">
+        <div class="success-screen">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h2>Visit Complete!</h2>
+            <p id="success-message">-</p>
+            <button class="primary-btn" onclick="resetAndGoHome()"><i class="fas fa-plus"></i> New Visit</button>
+        </div>
+    </div>
+
+    <!-- Doctor: list of visits -->
+    <div id="doctor-home-screen" class="screen">
+        <h2>Visit notes</h2>
+        <p style="font-size: 15px; color: var(--text-muted); margin-bottom: 20px;">Tap a visit to see full notes</p>
+        <div id="doctor-visits-list"></div>
+        <button type="button" class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+
+    <!-- Doctor: single visit notes (full notes view) -->
+    <div id="doctor-visit-detail-screen" class="screen">
+        <h2 id="doctor-visit-title">Visit notes</h2>
+        <div id="doctor-visit-notes"></div>
+        <button type="button" class="primary-btn" style="margin-top: 20px;" onclick="showScreen('doctor-home')">← Back to visits</button>
+        <button type="button" class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
+
+    <!-- Skip Reason Modal -->
+    <div class="modal-overlay" id="skip-modal">
+        <div class="modal">
+            <h3>Why are you skipping this?</h3>
+            <button class="skip-reason-btn" onclick="confirmSkip('Already given')">Already given</button>
+            <button class="skip-reason-btn" onclick="confirmSkip('Not available')">Not available</button>
+            <button class="skip-reason-btn" onclick="confirmSkip('Patient refused')">Patient refused</button>
+            <button class="skip-reason-btn" onclick="confirmSkip('Not needed')">Not needed</button>
+        </div>
+    </div>
+
+    <!-- Inworld AI Settings Modal -->
+    <div class="modal-overlay" id="inworld-settings-modal">
+        <div class="modal" style="max-width: 420px;">
+            <h3><i class="fas fa-robot"></i> Inworld AI Settings</h3>
+            <div style="margin: 20px 0;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">API Key</label>
+                <input type="password" id="inworld-api-key" placeholder="Enter your Inworld API key" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: monospace;">
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">Get your key from <a href="https://studio.inworld.ai" target="_blank" style="color: var(--primary);">studio.inworld.ai</a></p>
+            </div>
+            <div style="margin: 20px 0;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Workspace ID</label>
+                <input type="text" id="inworld-workspace-id" placeholder="Enter workspace ID" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;">
+            </div>
+            <div style="margin: 20px 0;">
+                <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">Character ID</label>
+                <input type="text" id="inworld-character-id" placeholder="Enter character ID" style="width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px;">
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button class="primary-btn" style="flex: 1; margin-top: 0;" onclick="saveInworldSettings()">Save</button>
+                <button class="skip-btn" style="flex: 1; margin-top: 0; padding: 14px;" onclick="closeInworldSettingsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+        'use strict';
+        try {
+        // ==================== STATE ====================
+        const STORAGE_KEYS = { patients: 'afya_patients', visits: 'afya_visits', pendingSync: 'afya_pendingSync', currentUser: 'afya_currentUser', chwProfile: 'afya_chwProfile' };
+        
+        const defaultPatients = [
+            { id: '1', name: 'Amina Juma', dob: '2022-03-15', sex: 'FEMALE', village: 'Kijiji' },
+            { id: '2', name: 'Joseph Mwangi', dob: '2021-08-22', sex: 'MALE', village: 'Mwanzo' },
+            { id: '3', name: 'Fatima Hassan', dob: '2023-01-10', sex: 'FEMALE', village: 'Upendo' }
+        ];
+        
+        let patients = loadFromStorage(STORAGE_KEYS.patients, defaultPatients);
+        if (!Array.isArray(patients)) patients = defaultPatients;
+        
+        let visits = loadFromStorage(STORAGE_KEYS.visits, []);
+        if (!Array.isArray(visits)) visits = [];
+        
+        let currentPatient = null;
+        let currentVisit = {
+            symptoms: [],
+            vitals: {},
+            dangerSigns: [],
+            photoBefore: null,
+            photoAfter: null
+        };
+        let currentSuggestions = [];
+        let skipSuggestionId = null;
+        let selectedFollowup = null;
+        let suggestedFollowUpDays = null;
+        let currentStructuredNotes = null;
+        let pendingSync = loadFromStorage(STORAGE_KEYS.pendingSync, 0);
+        if (typeof pendingSync !== 'number') pendingSync = 0;
+        let currentUser = loadFromStorage(STORAGE_KEYS.currentUser, null);
+        let chwProfile = loadFromStorage(STORAGE_KEYS.chwProfile, { name: 'Jane', location: 'Kijiji', photo: null });
+        if (!chwProfile || typeof chwProfile.name !== 'string') chwProfile = { name: 'Jane', location: 'Kijiji', photo: null };
+        if (typeof chwProfile.photo !== 'string') chwProfile.photo = null;
+        let pendingChwPhoto = null;
+        
+        function loadFromStorage(key, fallback) {
+            try {
+                const raw = localStorage.getItem(key);
+                if (!raw) return fallback;
+                const parsed = JSON.parse(raw);
+                return parsed !== null && parsed !== undefined ? parsed : fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
+        
+        function saveToStorage(key, value) {
+            try {
+                localStorage.setItem(key, JSON.stringify(value));
+            } catch (e) {
+                console.warn('Storage save failed', e);
+            }
+        }
+        
+        let isRecording = false;
+        let recognition = null;
+        let mediaStream = null;
+        
+        // ==================== NAVIGATION ====================
+        const screenHistory = ['home'];
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            const el = document.getElementById(screenId + '-screen');
+            if (!el) {
+                console.error('Screen not found:', screenId + '-screen');
+                return;
+            }
+            el.classList.add('active');
+            
+            if (screenId !== screenHistory[screenHistory.length - 1]) {
+                screenHistory.push(screenId);
+            }
+            
+            const header = document.getElementById('main-header');
+            const isDoctorScreen = screenId === 'doctor-home' || screenId === 'doctor-visit-detail';
+            if (header) {
+                header.classList.toggle('hidden', screenId === 'login' || isDoctorScreen);
+            }
+            if (screenId !== 'login' && !isDoctorScreen) updateHeaderProfile();
+            
+            if (screenId === 'home') {
+                updateWelcomeBlock();
+                renderRecentPatients();
+                renderRecentVisits();
+            }
+            if (screenId === 'search') {
+                const inp = document.getElementById('search-input');
+                if (inp) { inp.value = ''; searchPatients(); }
+            }
+            if (screenId === 'doctor-home') {
+                renderDoctorVisitsList();
+            }
+            
+            document.querySelector('.back-btn').classList.toggle('visible', screenHistory.length > 1 && screenId !== 'home' && screenId !== 'login' && screenId !== 'doctor-home' && screenId !== 'chw-setup');
+            
+            const titles = {
+                'home': 'Afya Assistant',
+                'chw-setup': 'Welcome',
+                'search': 'Find Patient',
+                'create': 'New Patient',
+                'patient-profile': 'Patient',
+                'capture': 'Capture Symptoms',
+                'structured-notes': 'Review Notes',
+                'suggestions': 'Review Suggestions',
+                'summary': 'Visit Summary',
+                'success': 'Complete',
+                'login': 'Afya Assistant',
+                'doctor-home': 'Visit notes',
+                'doctor-visit-detail': 'Visit notes'
+            };
+            const h1 = document.querySelector('.header h1');
+            if (h1) h1.textContent = titles[screenId] || 'Afya Assistant';
+        }
+        
+        function showChwSetup() {
+            currentUser = 'CHW';
+            saveToStorage(STORAGE_KEYS.currentUser, currentUser);
+            pendingChwPhoto = null;
+            document.getElementById('chw-name').value = chwProfile.name || '';
+            document.getElementById('chw-location').value = chwProfile.location || '';
+            var previewImg = document.getElementById('chw-photo-img');
+            var placeholder = document.getElementById('chw-photo-placeholder');
+            if (chwProfile.photo) {
+                previewImg.src = chwProfile.photo;
+                previewImg.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                previewImg.src = '';
+                previewImg.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+            document.getElementById('chw-photo-input').value = '';
+            screenHistory.length = 0;
+            screenHistory.push('chw-setup');
+            document.getElementById('main-header').classList.add('hidden');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('chw-setup-screen').classList.add('active');
+        }
+        
+        function handleChwPhotoSelect(event) {
+            var file = event.target && event.target.files && event.target.files[0];
+            if (!file) return;
+            var img = new Image();
+            var url = URL.createObjectURL(file);
+            img.onload = function() {
+                URL.revokeObjectURL(url);
+                var max = 200;
+                var w = img.width, h = img.height;
+                if (w > max || h > max) {
+                    if (w > h) { h = Math.round(h * max / w); w = max; }
+                    else { w = Math.round(w * max / h); h = max; }
+                }
+                var canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                var ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                pendingChwPhoto = canvas.toDataURL('image/jpeg', 0.8);
+                document.getElementById('chw-photo-img').src = pendingChwPhoto;
+                document.getElementById('chw-photo-img').style.display = 'block';
+                document.getElementById('chw-photo-placeholder').style.display = 'none';
+            };
+            img.onerror = function() { URL.revokeObjectURL(url); };
+            img.src = url;
+        }
+        
+        function saveChwProfileAndGoHome() {
+            const name = document.getElementById('chw-name').value.trim();
+            const location = document.getElementById('chw-location').value.trim();
+            chwProfile.name = name || 'Jane';
+            chwProfile.location = location || 'Kijiji';
+            if (pendingChwPhoto !== null) chwProfile.photo = pendingChwPhoto;
+            pendingChwPhoto = null;
+            saveToStorage(STORAGE_KEYS.chwProfile, chwProfile);
+            screenHistory.length = 0;
+            screenHistory.push('home');
+            document.getElementById('main-header').classList.remove('hidden');
+            updateWelcomeBlock();
+            updateHeaderProfile();
+            showScreen('home');
+        }
+        
+        function updateHeaderProfile() {
+            var profileEl = document.getElementById('header-profile');
+            var photoImg = document.getElementById('header-profile-photo');
+            var initialsEl = document.getElementById('header-profile-photo-initials');
+            var nameEl = document.getElementById('header-profile-name');
+            if (!profileEl) return;
+            if (currentUser !== 'CHW') {
+                profileEl.style.display = 'none';
+                return;
+            }
+            profileEl.style.display = 'flex';
+            var name = chwProfile.name || 'Jane';
+            nameEl.textContent = name;
+            var initials = name.split(/\s+/).map(function(s) { return s.charAt(0); }).join('').toUpperCase().slice(0, 2);
+            if (chwProfile.photo) {
+                photoImg.src = chwProfile.photo;
+                photoImg.style.display = 'block';
+                initialsEl.style.display = 'none';
+            } else {
+                photoImg.src = '';
+                photoImg.style.display = 'none';
+                initialsEl.textContent = initials || '?';
+                initialsEl.style.display = 'flex';
+            }
+        }
+        
+        function updateWelcomeBlock() {
+            const nameEl = document.getElementById('chw-welcome-name');
+            const locEl = document.getElementById('chw-welcome-location');
+            if (nameEl) nameEl.textContent = chwProfile.name || 'Jane';
+            if (locEl) locEl.textContent = chwProfile.location || 'Kijiji';
+        }
+        
+        function loginAs(role) {
+            currentUser = role;
+            saveToStorage(STORAGE_KEYS.currentUser, currentUser);
+            screenHistory.length = 0;
+            screenHistory.push(role === 'Doctor' ? 'doctor-home' : 'home');
+            showScreen(role === 'Doctor' ? 'doctor-home' : 'home');
+        }
+        
+        function logout() {
+            currentUser = null;
+            saveToStorage(STORAGE_KEYS.currentUser, null);
+            screenHistory.length = 0;
+            screenHistory.push('login');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('login-screen').classList.add('active');
+            document.getElementById('main-header').classList.add('hidden');
+        }
+        
+        function renderDoctorVisitsList() {
+            const list = document.getElementById('doctor-visits-list');
+            if (!list) return;
+            if (visits.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted); font-size: 15px;">No visits recorded yet.</p>';
+                return;
+            }
+            list.innerHTML = visits.map((v, i) => `
+                <div class="doctor-visit-row" onclick="openDoctorVisitDetail(${i})">
+                    <div class="name">${v.patientName}</div>
+                    <div class="details">${v.date} · ${(v.symptoms || []).join(', ') || '—'}</div>
+                    <div class="details" style="margin-top: 4px;">${(v.treatments || []).length ? '✓ ' + v.treatments.join(', ') : ''}</div>
+                </div>
+            `).join('');
+        }
+        
+        function openDoctorVisitDetail(visitIndex) {
+            const v = visits[visitIndex];
+            if (!v) return;
+            document.getElementById('doctor-visit-title').textContent = v.patientName + ' · ' + v.date;
+            const container = document.getElementById('doctor-visit-notes');
+            const chief = v.chiefComplaint ? `<div class="notes-card"><h3>Chief complaint</h3><p>${escapeHtml(v.chiefComplaint)}</p></div>` : '';
+            const syms = (v.symptoms && v.symptoms.length) ? `<div class="notes-card"><h3>Symptoms</h3><ul>${v.symptoms.map(s => '<li>' + escapeHtml(s) + '</li>').join('')}</ul></div>` : '';
+            const flags = (v.dangerSigns && v.dangerSigns.length) ? `<div class="notes-card"><h3>Red flags / Danger signs</h3><ul>${v.dangerSigns.map(f => '<li>' + escapeHtml(f) + '</li>').join('')}</ul></div>` : '';
+            const freeText = v.freeText ? `<div class="notes-card"><h3>Notes</h3><p>${escapeHtml(v.freeText)}</p></div>` : '';
+            const treatments = (v.treatments && v.treatments.length) ? `<div class="notes-card"><h3>Treatment given</h3><ul>${v.treatments.map(t => '<li>' + escapeHtml(t) + '</li>').join('')}</ul></div>` : '';
+            const followUp = v.followUpDays ? `<div class="notes-card"><h3>Follow-up</h3><p>${v.followUpDays} days</p></div>` : '';
+            const vit = v.vitals || {};
+            const vitParts = [];
+            if (vit.temperature != null) vitParts.push('Temp ' + vit.temperature + ' °C');
+            if (vit.weightKg != null) vitParts.push('Weight ' + vit.weightKg + ' kg');
+            if (vit.muac != null) vitParts.push('MUAC ' + vit.muac + ' mm');
+            if (vit.respiratoryRate != null) vitParts.push('Resp ' + vit.respiratoryRate + '/min');
+            if (vit.pulse != null) vitParts.push('Pulse ' + vit.pulse + '/min');
+            if (vit.bloodPressure) vitParts.push('BP ' + escapeHtml(vit.bloodPressure));
+            const vitalsBlock = vitParts.length ? '<div class="notes-card"><h3>Vitals</h3><p>' + vitParts.join(' · ') + '</p></div>' : '';
+            let photos = '';
+            if (v.photoBefore || v.photoAfter) {
+                const beforePart = v.photoBefore ? '<div><p style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">Before</p><img src="' + v.photoBefore + '" alt="Before"></div>' : '';
+                const afterPart = v.photoAfter ? '<div><p style="font-size:13px;color:var(--text-muted);margin-bottom:6px;">After</p><img src="' + v.photoAfter + '" alt="After"></div>' : '';
+                photos = '<div class="notes-card"><h3>Progress photos</h3><div class="progress-photos">' + beforePart + afterPart + '</div></div>';
+            }
+            container.innerHTML = chief + syms + vitalsBlock + flags + freeText + treatments + followUp + photos || '<p style="color: var(--text-muted);">No notes for this visit.</p>';
+            showScreen('doctor-visit-detail');
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function goBack() {
+            screenHistory.pop();
+            const prev = screenHistory[screenHistory.length - 1] || 'home';
+            showScreen(prev);
+        }
+        
+        // ==================== HOME ====================
+        function renderRecentPatients() {
+            const list = document.getElementById('recent-list');
+            if (!list) return;
+            list.innerHTML = patients.map(p => `
+                <div class="patient-card" onclick="selectPatient('${p.id}')">
+                    <div class="name">${p.name}</div>
+                    <div class="details">${calculateAge(p.dob)} • ${p.village}</div>
+                </div>
+            `).join('');
+        }
+        
+        function renderRecentVisits() {
+            const list = document.getElementById('recent-visits-list');
+            if (!list) return;
+            const recent = visits.slice(0, 10);
+            if (recent.length === 0) {
+                list.innerHTML = '<p style="color: #999; font-size: 14px;">No visits yet</p>';
+                return;
+            }
+            list.innerHTML = recent.map(v => `
+                <div class="patient-card" style="cursor: default;">
+                    <div class="name">${v.patientName}</div>
+                    <div class="details">${v.date} • ${(v.symptoms || []).join(', ') || '—'}</div>
+                    <div class="details" style="margin-top: 4px;">${(v.treatments || []).length ? '✓ ' + v.treatments.join(', ') : '-'}</div>
+                </div>
+            `).join('');
+        }
+        
+        function calculateAge(dob) {
+            const birth = new Date(dob);
+            const now = new Date();
+            const months = (now.getFullYear() - birth.getFullYear()) * 12 + 
+                          (now.getMonth() - birth.getMonth());
+            if (months < 24) return `${months} months`;
+            return `${Math.floor(months/12)} years`;
+        }
+        
+        // ==================== SEARCH ====================
+        function searchPatients() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const results = patients.filter(p => p.name.toLowerCase().includes(query));
+            
+            document.getElementById('search-results').innerHTML = results.map(p => `
+                <div class="patient-card" onclick="selectPatient('${p.id}')">
+                    <div class="name">${p.name}</div>
+                    <div class="details">${calculateAge(p.dob)} • ${p.village}</div>
+                </div>
+            `).join('');
+        }
+        
+        function getPatientVisits(patientId) {
+            return visits.filter(v => v.patientId === patientId).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        }
+        
+        function openPatientProfile(patientId) {
+            currentPatient = patients.find(p => p.id === patientId);
+            if (!currentPatient) return;
+            renderPatientProfile();
+            screenHistory.push('patient-profile');
+            showScreen('patient-profile');
+        }
+        
+        function buildClientProfileFromHistory(patientVisits) {
+            if (!patientVisits || patientVisits.length === 0) return { summary: '', bullets: [] };
+            var symptomCount = {};
+            var treatmentCount = {};
+            var hadDangerSigns = false;
+            var followUpCount = 0;
+            var lastVisit = patientVisits[0];
+            var recentVitals = { temp: [], weight: [], muac: [] };
+            for (var i = 0; i < patientVisits.length; i++) {
+                var v = patientVisits[i];
+                (v.symptoms || []).forEach(function(s) {
+                    var key = String(s).toLowerCase();
+                    symptomCount[key] = (symptomCount[key] || 0) + 1;
+                });
+                (v.treatments || []).forEach(function(t) {
+                    treatmentCount[t] = (treatmentCount[t] || 0) + 1;
+                });
+                if (v.dangerSigns && v.dangerSigns.length > 0) hadDangerSigns = true;
+                if (v.followUpDays && v.followUpDays > 0) followUpCount++;
+                var vit = v.vitals || {};
+                if (vit.temperature != null) recentVitals.temp.push(vit.temperature);
+                if (vit.weightKg != null) recentVitals.weight.push(vit.weightKg);
+                if (vit.muac != null) recentVitals.muac.push(vit.muac);
+            }
+            var totalVisits = patientVisits.length;
+            var summaryParts = [];
+            if (totalVisits === 1) summaryParts.push('1 visit recorded.');
+            else summaryParts.push(totalVisits + ' visits recorded.');
+            var topSymptoms = Object.entries(symptomCount).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 3);
+            if (topSymptoms.length > 0) {
+                var symptomStr = topSymptoms.map(function(x) { return x[0] + (x[1] > 1 ? ' (' + x[1] + 'x)' : ''); }).join(', ');
+                summaryParts.push('Often presents with: ' + symptomStr + '.');
+            }
+            var bullets = [];
+            if (Object.keys(treatmentCount).length > 0) {
+                var treatmentsGiven = Object.keys(treatmentCount).filter(function(t) { return treatmentCount[t] > 0; });
+                if (treatmentsGiven.length > 0) bullets.push('Treatments given before: ' + treatmentsGiven.join(', ') + '.');
+            }
+            if (hadDangerSigns) bullets.push('Has had danger signs in a previous visit — check carefully.');
+            if (followUpCount > 0) bullets.push('Follow-up scheduled in ' + followUpCount + ' previous visit(s).');
+            if (lastVisit.date) bullets.push('Last visit: ' + lastVisit.date + (lastVisit.chiefComplaint ? ' — ' + lastVisit.chiefComplaint : '') + '.');
+            if (recentVitals.weight.length >= 2) {
+                var w1 = recentVitals.weight[0], w2 = recentVitals.weight[recentVitals.weight.length - 1];
+                if (w1 > 0 && w2 > 0) bullets.push('Weight: last recorded ' + w1 + ' kg (trend from history available).');
+            } else if (recentVitals.weight.length === 1 && recentVitals.weight[0] > 0) {
+                bullets.push('Weight last recorded: ' + recentVitals.weight[0] + ' kg.');
+            }
+            if (recentVitals.muac.length > 0) {
+                var lastMuac = recentVitals.muac[0];
+                if (lastMuac < 115) bullets.push('MUAC ' + lastMuac + ' mm — severe acute malnutrition flagged.');
+                else bullets.push('MUAC last recorded: ' + lastMuac + ' mm.');
+            }
+            var summary = summaryParts.join(' ');
+            return { summary: summary, bullets: bullets };
+        }
+        
+        function renderPatientProfile() {
+            if (!currentPatient) return;
+            document.getElementById('profile-patient-name').textContent = currentPatient.name;
+            document.getElementById('profile-patient-meta').textContent = 
+                calculateAge(currentPatient.dob) + ' · ' + (currentPatient.village || '');
+            const patientVisits = getPatientVisits(currentPatient.id);
+            var profileCard = document.getElementById('profile-client-summary');
+            var summaryText = document.getElementById('profile-summary-text');
+            var bulletsList = document.getElementById('profile-bullets-list');
+            var profile = buildClientProfileFromHistory(patientVisits);
+            if (profile.summary || profile.bullets.length > 0) {
+                profileCard.style.display = 'block';
+                if (summaryText) summaryText.textContent = profile.summary;
+                if (bulletsList) {
+                    bulletsList.innerHTML = profile.bullets.map(function(b) { return '<li>' + escapeHtml(b) + '</li>'; }).join('');
+                }
+            } else {
+                profileCard.style.display = 'none';
+            }
+            const list = document.getElementById('profile-visits-list');
+            if (!list) return;
+            if (patientVisits.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted); font-size: 14px;">No visits yet. Start a new visit below.</p>';
+                return;
+            }
+            list.innerHTML = patientVisits.map(v => `
+                <div class="history-visit-card">
+                    <div class="date">${v.date || '—'}</div>
+                    <div class="summary">${(v.symptoms || []).join(', ') || '—'} ${v.chiefComplaint ? ' · ' + v.chiefComplaint : ''}</div>
+                    <div class="treatments">${(v.treatments || []).length ? '✓ ' + v.treatments.join(', ') : ''}</div>
+                    ${v.followUpDays ? '<div class="summary">Follow-up: ' + v.followUpDays + ' days</div>' : ''}
+                </div>
+            `).join('');
+        }
+        
+        function startVisitFromProfile() {
+            if (!currentPatient) return;
+            currentVisit = { symptoms: [], vitals: {}, dangerSigns: [], photoBefore: null, photoAfter: null };
+            startVisit();
+        }
+        
+        function selectPatient(id) {
+            openPatientProfile(id);
+        }
+        
+        // ==================== CREATE PATIENT ====================
+        let newPatientSex = null;
+        
+        function selectSex(sex, btn) {
+            newPatientSex = sex;
+            document.querySelectorAll('.sex-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+        
+        function createPatient() {
+            const name = document.getElementById('new-name').value.trim();
+            const dob = document.getElementById('new-dob').value;
+            const village = document.getElementById('new-village').value;
+            
+            if (!name || !dob || !newPatientSex || !village) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            const newPatient = {
+                id: Date.now().toString(),
+                name,
+                dob,
+                sex: newPatientSex,
+                village
+            };
+            
+            patients.unshift(newPatient);
+            saveToStorage(STORAGE_KEYS.patients, patients);
+            pendingSync++;
+            saveToStorage(STORAGE_KEYS.pendingSync, pendingSync);
+            updateSyncStatus();
+            
+            currentPatient = newPatient;
+            currentVisit = { symptoms: [], vitals: {}, dangerSigns: [], photoBefore: null, photoAfter: null };
+            startVisit();
+        }
+        
+        // ==================== CAPTURE ====================
+        function startVisit() {
+            document.getElementById('capture-patient-name').textContent = currentPatient.name;
+            document.getElementById('capture-patient-age').textContent = 
+                `${calculateAge(currentPatient.dob)} old • ${currentPatient.village}`;
+            
+            // Reset capture state
+            document.getElementById('transcript').textContent = 'Transcript will appear here...';
+            document.getElementById('transcript').classList.add('empty');
+            document.getElementById('selected-symptoms').innerHTML = '';
+            document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('selected'));
+            document.getElementById('danger-alert').classList.remove('visible');
+            const vitalIds = ['vital-temp', 'vital-weight', 'vital-muac', 'vital-resp-rate', 'vital-pulse', 'vital-bp'];
+            vitalIds.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            currentVisit.photoBefore = null;
+            currentVisit.photoAfter = null;
+            renderPhotoThumb('before', null);
+            renderPhotoThumb('after', null);
+            updateContinueButton();
+            showScreen('capture');
+        }
+        
+        const MAX_PHOTO_SIZE = 500;
+        const PHOTO_QUALITY = 0.75;
+        
+        function resizeImageAsDataUrl(file, maxSize, quality, callback) {
+            const img = new Image();
+            const url = URL.createObjectURL(file);
+            img.onload = function() {
+                URL.revokeObjectURL(url);
+                let w = img.width, h = img.height;
+                if (w > maxSize || h > maxSize) {
+                    if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+                    else { w = Math.round(w * maxSize / h); h = maxSize; }
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, w, h);
+                callback(canvas.toDataURL('image/jpeg', quality));
+            };
+            img.onerror = function() { URL.revokeObjectURL(url); callback(null); };
+            img.src = url;
+        }
+        
+        function handlePhotoInput(which) {
+            const input = document.getElementById('photo-' + which + '-input');
+            if (!input || !input.files || !input.files[0]) return;
+            const file = input.files[0];
+            resizeImageAsDataUrl(file, MAX_PHOTO_SIZE, PHOTO_QUALITY, function(dataUrl) {
+                if (dataUrl) {
+                    currentVisit['photo' + (which === 'before' ? 'Before' : 'After')] = dataUrl;
+                    renderPhotoThumb(which, dataUrl);
+                }
+                input.value = '';
+            });
+        }
+        
+        function renderPhotoThumb(which, dataUrl) {
+            const thumbEl = document.getElementById('photo-' + which + '-thumb');
+            const removeEl = document.getElementById('photo-' + which + '-remove');
+            if (!thumbEl) return;
+            if (dataUrl) {
+                thumbEl.innerHTML = '<img class="photo-thumb" src="' + dataUrl + '" alt="' + which + '">';
+                if (removeEl) removeEl.style.display = 'inline';
+            } else {
+                thumbEl.innerHTML = '';
+                if (removeEl) removeEl.style.display = 'none';
+            }
+        }
+        
+        function clearPhoto(which) {
+            currentVisit['photo' + (which === 'before' ? 'Before' : 'After')] = null;
+            renderPhotoThumb(which, null);
+        }
+        
+        function updateContinueButton() {
+            const transcriptEl = document.getElementById('transcript');
+            const raw = transcriptEl ? transcriptEl.textContent.trim() : '';
+            const hasTranscript = transcriptEl && !transcriptEl.classList.contains('empty') && raw &&
+                raw !== 'Transcript will appear here...' && raw !== 'Listening...';
+            const hasSymptoms = currentVisit && currentVisit.symptoms && currentVisit.symptoms.length > 0;
+            const btn = document.getElementById('continue-btn');
+            if (btn) btn.disabled = !hasTranscript && !hasSymptoms;
+        }
+        
+        function toggleVoice() {
+            if (isRecording) {
+                stopVoice();
+            } else {
+                startVoice();
+            }
+        }
+        
+        function startVoice() {
+            if (isRecording) return;
+            
+            const checkbox = document.getElementById('use-inworld-ai');
+            const useInworld = checkbox && checkbox.checked;
+            
+            if (useInworld) {
+                startVoiceWithInworld();
+            } else {
+                startVoiceWithBrowserSTT();
+            }
+        }
+        
+        async function startVoiceWithInworld() {
+            const settings = JSON.parse(localStorage.getItem('afya_inworld_settings') || '{}');
+            
+            if (!settings.apiKey) {
+                alert('Inworld AI is not configured. Please set up your API key in settings (⚙️ icon in header).');
+                document.getElementById('use-inworld-ai').checked = false;
+                startVoiceWithBrowserSTT();
+                return;
+            }
+            
+            if (!window.isSecureContext) {
+                alert('Microphone needs a secure page. Open the app via https:// or http://localhost.');
+                return;
+            }
+            
+            // Initialize Inworld session if not already done
+            if (!inworldConnected) {
+                const voiceHint = document.getElementById('voice-hint');
+                if (voiceHint) voiceHint.textContent = 'Connecting to Inworld AI...';
+                const connected = await initializeInworldSession();
+                if (!connected) {
+                    alert('Could not connect to Inworld AI. Using local speech recognition instead.');
+                    if (voiceHint) voiceHint.textContent = 'Tap to describe the problem';
+                    document.getElementById('use-inworld-ai').checked = false;
+                    startVoiceWithBrowserSTT();
+                    return;
+                }
+            }
+            
+            const voiceBtn = document.getElementById('voice-btn');
+            const voiceHint = document.getElementById('voice-hint');
+            const transcriptEl = document.getElementById('transcript');
+            
+            if (voiceHint) voiceHint.textContent = 'Requesting microphone...';
+            if (transcriptEl) {
+                transcriptEl.textContent = '';
+                transcriptEl.classList.remove('empty');
+            }
+            
+            const SpeechRecognitionAPI = window.webkitSpeechRecognition || window.SpeechRecognition;
+            if (!SpeechRecognitionAPI) {
+                alert('Voice recognition not supported. Please use Chrome, Edge, or Safari.');
+                return;
+            }
+            
+            try {
+                recognition = new SpeechRecognitionAPI();
+            } catch (err) {
+                console.error('SpeechRecognition init:', err);
+                alert('Could not start voice recognition.');
+                return;
+            }
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            recognition.maxAlternatives = 1;
+            
+            recognition.onresult = async function(event) {
+                if (!event.results || !event.results.length) return;
+                
+                var finalTranscript = '';
+                var interimTranscript = '';
+                for (var i = 0; i < event.results.length; i++) {
+                    var result = event.results[i];
+                    var transcriptPart = (result[0] && result[0].transcript) ? result[0].transcript : '';
+                    if (result.isFinal) {
+                        finalTranscript += (finalTranscript ? ' ' : '') + transcriptPart;
+                    } else {
+                        interimTranscript = transcriptPart;
+                    }
+                }
+                
+                var displayText = (finalTranscript + (interimTranscript ? ' ' + interimTranscript : '')).trim();
+                var el = document.getElementById('transcript');
+                if (el) {
+                    el.textContent = displayText || 'Listening...';
+                    el.classList.toggle('empty', !displayText);
+                }
+                
+                // Get Inworld AI response for the user's input
+                if (finalTranscript && finalTranscript.length > 0) {
+                    const inworldResponse = await sendToInworldAI(finalTranscript);
+                    if (inworldResponse) {
+                        const responseEl = document.createElement('div');
+                        responseEl.style.marginTop = '12px';
+                        responseEl.style.padding = '12px';
+                        responseEl.style.backgroundColor = '#e3f2fd';
+                        responseEl.style.borderRadius = '8px';
+                        responseEl.style.borderLeft = '4px solid #2196F3';
+                        responseEl.innerHTML = '<strong style="color: #1976D2;">🤖 AI:</strong> ' + inworldResponse;
+                        el.parentNode.insertBefore(responseEl, el.nextSibling);
+                    }
+                }
+                
+                var textToUse = (finalTranscript + (interimTranscript ? ' ' + interimTranscript : '')).trim();
+                if (textToUse) extractSymptomsFromText(textToUse);
+                updateContinueButton();
+            };
+            
+            recognition.onerror = function(e) {
+                if (e.error === 'no-speech') {
+                    const h = document.getElementById('voice-hint');
+                    if (h) h.textContent = 'No speech heard. Tap mic to try again.';
+                    return;
+                }
+                if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+                    alert('Microphone access was denied. Allow the mic and try again.');
+                } else if (e.error === 'audio-capture') {
+                    alert('No microphone found. Connect a mic or type symptoms instead.');
+                } else {
+                    console.error('Speech error:', e.error, e);
+                }
+                stopVoice();
+            };
+            
+            recognition.onend = function() {
+                if (!isRecording) return;
+                isRecording = false;
+                recognition = null;
+                const btn = document.getElementById('voice-btn');
+                const hint = document.getElementById('voice-hint');
+                if (btn) btn.classList.remove('recording');
+                if (hint) hint.textContent = 'Tap to describe the problem';
+                updateContinueButton();
+            };
+            
+            try {
+                recognition.start();
+                isRecording = true;
+                if (voiceBtn) voiceBtn.classList.add('recording');
+                if (voiceHint) voiceHint.textContent = 'Listening (Inworld mode)... tap to stop';
+            } catch (err) {
+                console.error('recognition.start failed:', err);
+                recognition = null;
+                alert('Could not start listening. Try again.');
+            }
+        }
+        
+        function startVoiceWithBrowserSTT() {
+            if (isRecording) return;
+            console.log('Starting browser STT...');
+            
+            if (!window.isSecureContext) {
+                alert('Microphone needs a secure page. Open the app via https:// or http://localhost (not file://).');
+                console.warn('Not in secure context');
+                return;
+            }
+            // Chrome uses webkitSpeechRecognition; try it first for best compatibility
+            const SpeechRecognitionAPI = window.webkitSpeechRecognition || window.SpeechRecognition;
+            if (!SpeechRecognitionAPI) {
+                alert('Voice recognition is not supported in this browser. Please use Chrome, Edge, or Safari.');
+                console.warn('SpeechRecognition API not available');
+                return;
+            }
+            const voiceBtn = document.getElementById('voice-btn');
+            const voiceHint = document.getElementById('voice-hint');
+            const transcriptEl = document.getElementById('transcript');
+            if (voiceHint) voiceHint.textContent = 'Requesting microphone...';
+            if (transcriptEl) {
+                transcriptEl.textContent = '';
+                transcriptEl.classList.remove('empty');
+            }
+            try {
+                recognition = new SpeechRecognitionAPI();
+                console.log('SpeechRecognition object created successfully');
+            } catch (err) {
+                console.error('SpeechRecognition init:', err);
+                if (voiceHint) voiceHint.textContent = 'Tap to describe the problem';
+                alert('Could not start voice recognition. Try Chrome.');
+                return;
+            }
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'en-US';
+            recognition.maxAlternatives = 1;
+            
+            recognition.onstart = function() {
+                console.log('Speech recognition started');
+            };
+            
+            recognition.onresult = function(event) {
+                if (!event.results || !event.results.length) return;
+                var finalTranscript = '';
+                var interimTranscript = '';
+                for (var i = 0; i < event.results.length; i++) {
+                    var result = event.results[i];
+                    var transcriptPart = (result[0] && result[0].transcript) ? result[0].transcript : '';
+                    if (result.isFinal) {
+                        finalTranscript += (finalTranscript ? ' ' : '') + transcriptPart;
+                    } else {
+                        interimTranscript = transcriptPart;
+                    }
+                }
+                var displayText = (finalTranscript + (interimTranscript ? ' ' + interimTranscript : '')).trim();
+                var el = document.getElementById('transcript');
+                if (el) {
+                    el.textContent = displayText || 'Listening...';
+                    el.classList.toggle('empty', !displayText);
+                }
+                var textToUse = (finalTranscript + (interimTranscript ? ' ' + interimTranscript : '')).trim();
+                if (textToUse) extractSymptomsFromText(textToUse);
+                updateContinueButton();
+            };
+            
+            recognition.onerror = function(e) {
+                console.error('Speech recognition error:', e.error);
+                if (e.error === 'no-speech') {
+                    const h = document.getElementById('voice-hint');
+                    if (h) h.textContent = 'No speech heard. Tap mic to try again.';
+                    return;
+                }
+                if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+                    alert('Microphone access was denied. Allow the mic in your browser and try again.');
+                } else if (e.error === 'audio-capture') {
+                    alert('No microphone found. Connect a mic or type symptoms instead.');
+                } else {
+                    console.error('Speech error:', e.error, e);
+                    alert('Speech recognition error: ' + e.error);
+                }
+                stopVoice();
+            };
+            
+            recognition.onend = function() {
+                console.log('Speech recognition ended');
+                if (!isRecording) return;
+                isRecording = false;
+                recognition = null;
+                const btn = document.getElementById('voice-btn');
+                const hint = document.getElementById('voice-hint');
+                if (btn) btn.classList.remove('recording');
+                if (hint) hint.textContent = 'Tap to describe the problem';
+                updateContinueButton();
+            };
+            
+            function doStartRecognition() {
+                try {
+                    recognition.start();
+                    isRecording = true;
+                    if (voiceBtn) voiceBtn.classList.add('recording');
+                    if (voiceHint) voiceHint.textContent = 'Listening... tap to stop';
+                    console.log('Recognition started, isRecording set to true');
+                } catch (err) {
+                    console.error('recognition.start failed:', err);
+                    recognition = null;
+                    if (voiceHint) voiceHint.textContent = 'Tap to describe the problem';
+                    alert('Could not start listening. Check that the microphone is allowed and try again.');
+                }
+            }
+            
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.log('getUserMedia not available, starting recognition directly');
+                doStartRecognition();
+                return;
+            }
+            navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    console.log('Microphone permission granted, stream obtained');
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(function(t) { t.stop(); });
+                    }
+                    mediaStream = stream;
+                    doStartRecognition();
+                })
+                .catch(function(err) {
+                    console.error('getUserMedia failed:', err);
+                    recognition = null;
+                    if (voiceHint) voiceHint.textContent = 'Tap to describe the problem';
+                    if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+                        alert('Microphone access was denied. Please allow the microphone and tap the mic again.');
+                    } else {
+                        alert('Could not access microphone. Use Chrome on https or localhost, allow the mic, and try again.');
+                    }
+                });
+        }
+        
+        function stopVoice() {
+            isRecording = false;
+            if (recognition) {
+                try { recognition.stop(); } catch (e) {}
+                recognition = null;
+            }
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(function(t) { t.stop(); });
+                mediaStream = null;
+            }
+            var btn = document.getElementById('voice-btn');
+            var hint = document.getElementById('voice-hint');
+            if (btn) btn.classList.remove('recording');
+            if (hint) hint.textContent = 'Tap to describe the problem';
+            updateContinueButton();
+        }
+        
+        function extractSymptomsFromText(text) {
+            const lower = text.toLowerCase();
+            const symptomKeywords = {
+                'Fever': ['fever', 'hot', 'temperature'],
+                'Cough': ['cough', 'coughing'],
+                'Diarrhea': ['diarrhea', 'loose stool', 'watery'],
+                'Vomiting': ['vomit', 'vomiting', 'throwing up'],
+                'Not eating': ['not eating', 'not drinking', 'won\'t eat', 'refuses'],
+                'Fast breathing': ['fast breathing', 'breathing fast', 'difficult breathing']
+            };
+            
+            for (const [symptom, keywords] of Object.entries(symptomKeywords)) {
+                if (keywords.some(k => lower.includes(k))) {
+                    if (!currentVisit.symptoms.find(s => s.name === symptom)) {
+                        addSymptom(symptom);
+                    }
+                }
+            }
+            
+            // Check for danger sign keywords
+            if (lower.includes('not drinking') || lower.includes('won\'t drink') || lower.includes('refuses')) {
+                showDangerAlert('not drinking');
+            }
+        }
+        
+        function toggleSymptom(name, btn) {
+            if (btn.classList.contains('selected')) {
+                btn.classList.remove('selected');
+                currentVisit.symptoms = currentVisit.symptoms.filter(s => s.name !== name);
+            } else {
+                btn.classList.add('selected');
+                addSymptom(name);
+            }
+            renderSelectedSymptoms();
+        }
+        
+        function addSymptom(name) {
+            if (!currentVisit.symptoms.find(s => s.name === name)) {
+                currentVisit.symptoms.push({ name, present: true });
+                
+                // Mark chip as selected
+                document.querySelectorAll('.symptom-chip').forEach(chip => {
+                    if (chip.textContent.includes(name)) {
+                        chip.classList.add('selected');
+                    }
+                });
+                
+                renderSelectedSymptoms();
+                updateContinueButton();
+                if (name === 'Not eating' || name.toLowerCase().includes('not')) {
+                    showDangerAlert('not eating/drinking');
+                }
+            }
+        }
+        
+        function removeSymptom(name) {
+            currentVisit.symptoms = currentVisit.symptoms.filter(s => s.name !== name);
+            document.querySelectorAll('.symptom-chip').forEach(chip => {
+                if (chip.textContent.includes(name)) {
+                    chip.classList.remove('selected');
+                }
+            });
+            renderSelectedSymptoms();
+            updateContinueButton();
+        }
+        
+        function renderSelectedSymptoms() {
+            const container = document.getElementById('selected-symptoms');
+            container.innerHTML = currentVisit.symptoms.map(s => `
+                <div class="selected-symptom">
+                    <span>${s.name}</span>
+                    <span class="remove" onclick="removeSymptom('${s.name}')">✕</span>
+                </div>
+            `).join('');
+        }
+        
+        function showDangerAlert(type) {
+            document.getElementById('danger-message').textContent = 
+                `"${type}" was mentioned. Please check: Can the child drink or breastfeed?`;
+            document.getElementById('danger-alert').classList.add('visible');
+        }
+        
+        function answerDanger(canDrink) {
+            document.getElementById('danger-alert').classList.remove('visible');
+            if (!canDrink) {
+                currentVisit.dangerSigns.push('Unable to drink/breastfeed');
+                alert('⚠️ DANGER SIGN CONFIRMED\n\nThis child needs urgent referral.');
+            }
+        }
+        
+        function proceedToStructuredNotes() {
+            const tempEl = document.getElementById('vital-temp');
+            const weightEl = document.getElementById('vital-weight');
+            const muacEl = document.getElementById('vital-muac');
+            const respEl = document.getElementById('vital-resp-rate');
+            const pulseEl = document.getElementById('vital-pulse');
+            const bpEl = document.getElementById('vital-bp');
+            if (tempEl && tempEl.value) currentVisit.vitals.temperature = parseFloat(tempEl.value);
+            if (weightEl && weightEl.value) currentVisit.vitals.weightKg = parseFloat(weightEl.value);
+            if (muacEl && muacEl.value) currentVisit.vitals.muac = parseInt(muacEl.value);
+            if (respEl && respEl.value) currentVisit.vitals.respiratoryRate = parseInt(respEl.value);
+            if (pulseEl && pulseEl.value) currentVisit.vitals.pulse = parseInt(pulseEl.value);
+            if (bpEl && bpEl.value) currentVisit.vitals.bloodPressure = String(bpEl.value).trim();
+            
+            var transcriptEl = document.getElementById('transcript');
+            var transcriptText = (transcriptEl && transcriptEl.textContent) ? transcriptEl.textContent.trim() : '';
+            if (transcriptText === 'Transcript will appear here...' || transcriptEl.classList.contains('empty')) transcriptText = '';
+            
+            // Build structured notes from transcript + currentVisit
+            var firstSentence = transcriptText.split(/[.!?]/)[0].trim() || '';
+            var chiefComplaint = firstSentence || (currentVisit.symptoms.length ? currentVisit.symptoms[0].name : '');
+            var symptomsWithConf = (currentVisit.symptoms || []).map(function(s) {
+                return { name: s.name, duration: s.duration || '', severity: s.severity || '', confidence: s.confidence || (transcriptText ? 'medium' : 'low') };
+            });
+            var redFlags = Array.isArray(currentVisit.dangerSigns) ? currentVisit.dangerSigns.slice() : [];
+            
+            currentStructuredNotes = {
+                chiefComplaint: chiefComplaint,
+                symptoms: symptomsWithConf,
+                redFlags: redFlags,
+                freeText: transcriptText,
+                chiefComplaintConfidence: transcriptText ? 'high' : (currentVisit.symptoms.length ? 'medium' : 'low'),
+                freeTextConfidence: transcriptText ? 'high' : 'low'
+            };
+            
+            // Populate structured notes screen
+            var ccInput = document.getElementById('edit-chief-complaint');
+            if (ccInput) { ccInput.value = currentStructuredNotes.chiefComplaint; }
+            var ccConf = document.getElementById('conf-chief-complaint');
+            if (ccConf) {
+                ccConf.textContent = currentStructuredNotes.chiefComplaintConfidence;
+                ccConf.className = 'confidence-badge conf-' + (currentStructuredNotes.chiefComplaintConfidence === 'high' ? 'high' : currentStructuredNotes.chiefComplaintConfidence === 'medium' ? 'med' : 'low');
+            }
+            
+            var symList = document.getElementById('structured-symptoms-list');
+            if (symList) {
+                symList.innerHTML = currentStructuredNotes.symptoms.map(function(s, i) {
+                    var confClass = s.confidence === 'high' ? 'conf-high' : s.confidence === 'medium' ? 'conf-med' : 'conf-low';
+                    return '<div class="selected-symptom"><span>' + s.name + (s.duration ? ' (' + s.duration + ')' : '') + '</span><span class="confidence-badge ' + confClass + '">' + (s.confidence || 'medium') + '</span></div>';
+                }).join('') || '<p style="color:#999;font-size:14px;">No symptoms listed. Add on previous screen.</p>';
+            }
+            
+            var rfList = document.getElementById('structured-redflags-list');
+            var rfSection = document.getElementById('red-flags-section');
+            if (rfList) rfList.innerHTML = currentStructuredNotes.redFlags.length ? currentStructuredNotes.redFlags.map(function(r) { return '<div class="selected-symptom" style="background:#ffebee;"><span>' + r + '</span></div>'; }).join('') : '<p style="color:#999;font-size:14px;">None</p>';
+            if (rfSection) rfSection.style.display = currentStructuredNotes.redFlags.length ? 'block' : 'block';
+            
+            var freeEl = document.getElementById('edit-free-text');
+            if (freeEl) freeEl.value = currentStructuredNotes.freeText;
+            var freeConf = document.getElementById('conf-free-text');
+            if (freeConf) {
+                freeConf.textContent = currentStructuredNotes.freeTextConfidence;
+                freeConf.className = 'confidence-badge conf-' + (currentStructuredNotes.freeTextConfidence === 'high' ? 'high' : currentStructuredNotes.freeTextConfidence === 'medium' ? 'med' : 'low');
+            }
+            
+            var warnEl = document.getElementById('processing-warnings');
+            if (warnEl) warnEl.innerHTML = !transcriptText && currentVisit.symptoms.length === 0 ? '<strong>Tip:</strong> No voice or symptoms captured. You can type chief complaint and notes above.' : '';
+            
+            showScreen('structured-notes');
+        }
+        
+        function proceedToSuggestions() {
+            var ccInput = document.getElementById('edit-chief-complaint');
+            var freeEl = document.getElementById('edit-free-text');
+            if (ccInput && currentStructuredNotes) currentStructuredNotes.chiefComplaint = ccInput.value.trim();
+            if (freeEl && currentStructuredNotes) currentStructuredNotes.freeText = freeEl.value.trim();
+            
+            // If no symptoms from capture, infer from chief complaint / free text so flow doesn't block
+            if (currentVisit.symptoms.length === 0 && currentStructuredNotes) {
+                var text = ((currentStructuredNotes.chiefComplaint || '') + ' ' + (currentStructuredNotes.freeText || '')).toLowerCase();
+                if (text.includes('fever') || text.includes('hot')) currentVisit.symptoms.push({ name: 'Fever', present: true });
+                if (text.includes('cough')) currentVisit.symptoms.push({ name: 'Cough', present: true });
+                if (text.includes('diarrhea') || text.includes('loose') || text.includes('stool')) currentVisit.symptoms.push({ name: 'Diarrhea', present: true });
+                if (text.includes('vomit')) currentVisit.symptoms.push({ name: 'Vomiting', present: true });
+            }
+            
+            generateSuggestions();
+            showScreen('suggestions');
+        }
+        
+        // ==================== SUGGESTIONS ====================
+        function recommendFollowUpFromHistory() {
+            suggestedFollowUpDays = null;
+            if (!currentPatient) return;
+            const patientVisits = getPatientVisits(currentPatient.id);
+            const symptomNames = (currentVisit.symptoms || []).map(s => s.name.toLowerCase());
+            const hasFever = symptomNames.some(s => s.includes('fever'));
+            const hasDiarrhea = symptomNames.some(s => s.includes('diarrhea'));
+            const hasCough = symptomNames.some(s => s.includes('cough'));
+            if (patientVisits.length === 0) {
+                if (hasFever || hasDiarrhea) suggestedFollowUpDays = 2;
+                else if (hasCough) suggestedFollowUpDays = 5;
+                return;
+            }
+            const lastVisit = patientVisits[0];
+            const lastSymptoms = (lastVisit.symptoms || []).map(s => String(s).toLowerCase());
+            const lastHadFever = lastSymptoms.some(s => s.includes('fever'));
+            const lastHadDiarrhea = lastSymptoms.some(s => s.includes('diarrhea'));
+            const sameFever = hasFever && lastHadFever;
+            const sameDiarrhea = hasDiarrhea && lastHadDiarrhea;
+            if (sameFever || sameDiarrhea) suggestedFollowUpDays = 2;
+            else if (hasFever || hasDiarrhea) suggestedFollowUpDays = 2;
+            else if (hasCough) suggestedFollowUpDays = 5;
+        }
+        
+        function generateSuggestions() {
+            currentSuggestions = [];
+            recommendFollowUpFromHistory();
+            
+            // Check for danger signs → Referral
+            if (currentVisit.dangerSigns.length > 0) {
+                currentSuggestions.push({
+                    id: 'ref-1',
+                    type: 'referral',
+                    title: 'Urgent Referral Needed',
+                    description: 'Refer to nearest health facility immediately',
+                    reason: 'Danger sign confirmed: ' + currentVisit.dangerSigns.join(', '),
+                    guideline: 'WHO IMCI General Danger Signs',
+                    urgent: true,
+                    decided: false
+                });
+            }
+            
+            // Check vitals
+            const vitals = currentVisit.vitals || {};
+            if (typeof vitals.temperature === 'number' && vitals.temperature >= 39.5) {
+                currentSuggestions.push({
+                    id: 'danger-temp',
+                    type: 'danger',
+                    title: 'Very High Fever',
+                    description: `Temperature ${vitals.temperature}°C requires urgent attention`,
+                    reason: 'Temperature is dangerously high',
+                    guideline: 'WHO IMCI',
+                    urgent: true,
+                    decided: false
+                });
+            }
+            
+            if (typeof vitals.muac === 'number' && vitals.muac < 115) {
+                currentSuggestions.push({
+                    id: 'danger-muac',
+                    type: 'danger',
+                    title: 'Severe Malnutrition',
+                    description: `MUAC ${vitals.muac}mm indicates severe acute malnutrition`,
+                    reason: 'MUAC below 115mm',
+                    guideline: 'WHO IMCI',
+                    urgent: true,
+                    decided: false
+                });
+            }
+            
+            var rr = vitals.respiratoryRate;
+            var ageMonths = currentPatient && currentPatient.dob ? (function() {
+                var birth = new Date(currentPatient.dob);
+                var now = new Date();
+                return (now.getFullYear() - birth.getFullYear()) * 12 + (now.getMonth() - birth.getMonth());
+            })() : 24;
+            var fastBreathingThreshold = ageMonths < 12 ? 50 : 40;
+            if (typeof rr === 'number' && rr >= fastBreathingThreshold) {
+                currentSuggestions.push({
+                    id: 'danger-fast-breathing',
+                    type: 'danger',
+                    title: 'Fast breathing',
+                    description: 'Respiratory rate ' + rr + '/min is at or above threshold (' + fastBreathingThreshold + '/min for this age). Consider pneumonia classification.',
+                    reason: 'Fast breathing for age',
+                    guideline: 'WHO IMCI',
+                    urgent: true,
+                    decided: false
+                });
+            }
+            
+            // Symptom-based treatments
+            const symptomNames = currentVisit.symptoms.map(s => s.name.toLowerCase());
+            
+            if (symptomNames.some(s => s.includes('diarrhea'))) {
+                currentSuggestions.push({
+                    id: 'tx-ors',
+                    type: 'treatment',
+                    title: 'ORS (Oral Rehydration Salts)',
+                    description: 'Under 2 years: 50-100ml after each loose stool\n2-5 years: 100-200ml after each loose stool\n\n• Mix 1 packet with 1 liter clean water\n• Give small sips frequently\n• If child vomits, wait 10 min, continue slowly',
+                    reason: 'Child has diarrhea',
+                    guideline: 'WHO IMCI Plan A',
+                    urgent: false,
+                    decided: false
+                });
+                
+                currentSuggestions.push({
+                    id: 'tx-zinc',
+                    type: 'treatment',
+                    title: 'Zinc Supplementation',
+                    description: 'Under 6 months: 10mg daily for 10-14 days\n6 months to 5 years: 20mg daily for 10-14 days\n\n• Continue even after diarrhea stops\n• Dissolve in breast milk or water',
+                    reason: 'Zinc recommended with ORS for diarrhea',
+                    guideline: 'WHO IMCI',
+                    urgent: false,
+                    decided: false
+                });
+            }
+            
+            if (symptomNames.some(s => s.includes('fever'))) {
+                currentSuggestions.push({
+                    id: 'tx-malaria',
+                    type: 'treatment',
+                    title: 'Consider malaria (ACT)',
+                    description: 'Do RDT if available. If positive (or per national policy): give ACT per weight/age.\n\n• First-line: artemether-lumefantrine (AL) or national ACT\n• Give with food; full course (3 days)\n• Paracetamol for fever as needed',
+                    reason: 'Child has fever; no danger signs',
+                    guideline: 'WHO malaria',
+                    urgent: false,
+                    decided: false
+                });
+                currentSuggestions.push({
+                    id: 'tx-para',
+                    type: 'treatment',
+                    title: 'Paracetamol for Fever',
+                    description: '4-6 kg: 60mg (quarter tablet)\n6-10 kg: 125mg (half tablet)\n10-19 kg: 250mg (1 tablet)\n\n• Give every 6 hours if fever continues\n• Maximum 4 doses per day',
+                    reason: 'Child has fever',
+                    guideline: 'WHO IMCI',
+                    urgent: false,
+                    decided: false
+                });
+            }
+            
+            if (suggestedFollowUpDays !== null) {
+                const patientVisits = getPatientVisits(currentPatient.id);
+                const reason = patientVisits.length > 0 
+                    ? 'Based on this visit and the patient\'s history, we suggest a follow-up in ' + suggestedFollowUpDays + ' days.'
+                    : 'Based on this visit, we suggest a follow-up in ' + suggestedFollowUpDays + ' days.';
+                currentSuggestions.push({
+                    id: 'followup-rec',
+                    type: 'treatment',
+                    title: 'Suggested follow-up',
+                    description: reason + '\n\nYou can confirm or change this on the summary screen.',
+                    reason: suggestedFollowUpDays === 2 ? 'Recheck in 2 days (fever/diarrhea or repeat visit)' : 'Recheck in 5 days (e.g. cough)',
+                    guideline: 'WHO IMCI',
+                    urgent: false,
+                    decided: true,
+                    accepted: true
+                });
+            }
+            
+            renderSuggestions();
+        }
+        
+        function renderSuggestions() {
+            const list = document.getElementById('suggestions-list');
+            if (currentSuggestions.length === 0) {
+                list.innerHTML = '<div class="suggestion-card" style="background: var(--bg); color: var(--text-muted); padding: 20px;"><p>No treatment suggestions from the information given. You can continue to summary and complete the visit.</p></div>';
+                const summaryBtn = document.getElementById('summary-btn');
+                if (summaryBtn) summaryBtn.style.display = 'block';
+                return;
+            }
+            list.innerHTML = currentSuggestions.map(s => {
+                const badgeClass = s.type === 'danger' ? 'danger' : 
+                                   s.type === 'referral' ? 'referral' : 'treatment';
+                
+                let actionHtml = '';
+                if (s.decided) {
+                    const badge = s.accepted ? 
+                        '<span class="decision-badge accepted">✓ Accepted</span>' :
+                        '<span class="decision-badge skipped">Skipped</span>';
+                    actionHtml = badge;
+                } else {
+                    actionHtml = `
+                        <div class="suggestion-actions">
+                            <button class="accept-btn" onclick="acceptSuggestion('${s.id}')">
+                                ${s.type === 'treatment' ? '✓ Give Treatment' : '✓ Accept'}
+                            </button>
+                            <button class="skip-btn" onclick="openSkipModal('${s.id}')">Skip</button>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="suggestion-card ${s.urgent ? 'urgent' : ''} ${s.decided ? 'decided' : ''}">
+                        <span class="badge ${badgeClass}">${s.type.toUpperCase()}</span>
+                        <h3>${s.title}</h3>
+                        <div class="description">${s.description}</div>
+                        <div class="reason">
+                            <strong>Why:</strong> ${s.reason}<br>
+                            <strong>Guideline:</strong> ${s.guideline}
+                        </div>
+                        ${actionHtml}
+                    </div>
+                `;
+            }).join('');
+            
+            const allDecided = currentSuggestions.every(s => s.decided);
+            const summaryBtn = document.getElementById('summary-btn');
+            if (summaryBtn) summaryBtn.style.display = allDecided ? 'block' : 'none';
+        }
+        
+        function acceptSuggestion(id) {
+            const suggestion = currentSuggestions.find(s => s.id === id);
+            if (suggestion) {
+                suggestion.decided = true;
+                suggestion.accepted = true;
+            }
+            renderSuggestions();
+        }
+        
+        function openSkipModal(id) {
+            skipSuggestionId = id;
+            document.getElementById('skip-modal').classList.add('visible');
+        }
+        
+        function confirmSkip(reason) {
+            const suggestion = currentSuggestions.find(s => s.id === skipSuggestionId);
+            if (suggestion) {
+                suggestion.decided = true;
+                suggestion.accepted = false;
+                suggestion.skipReason = reason;
+            }
+            document.getElementById('skip-modal').classList.remove('visible');
+            skipSuggestionId = null;
+            renderSuggestions();
+        }
+        
+        // ==================== SUMMARY ====================
+        function proceedToSummary() {
+            document.getElementById('summary-patient').textContent = 
+                `${currentPatient.name} • ${calculateAge(currentPatient.dob)}`;
+            
+            document.getElementById('summary-symptoms').innerHTML = 
+                currentVisit.symptoms.map(s => `<li>${s.name}</li>`).join('');
+            
+            const accepted = currentSuggestions.filter(s => s.accepted && s.type === 'treatment');
+            document.getElementById('summary-treatment').innerHTML = 
+                accepted.length > 0 
+                    ? accepted.map(s => `<li>${s.title}</li>`).join('')
+                    : '<li style="color: #999;">No treatments given</li>';
+            
+            document.querySelectorAll('.followup-btn').forEach(b => b.classList.remove('selected'));
+            const suggestEl = document.getElementById('followup-suggestion-text');
+            if (suggestedFollowUpDays !== null) {
+                suggestEl.style.display = 'block';
+                suggestEl.textContent = 'Suggested: ' + suggestedFollowUpDays + ' days (based on this visit and patient history)';
+                selectedFollowup = suggestedFollowUpDays;
+                const btn = document.getElementById('followup-btn-' + suggestedFollowUpDays);
+                if (btn) btn.classList.add('selected');
+            } else {
+                suggestEl.style.display = 'none';
+                selectedFollowup = null;
+            }
+            
+            showScreen('summary');
+        }
+        
+        function selectFollowup(days, btn) {
+            selectedFollowup = days;
+            document.querySelectorAll('.followup-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        }
+        
+        function completeVisit() {
+            const acceptedTreatments = currentSuggestions
+                .filter(s => s.accepted && s.type === 'treatment')
+                .map(s => s.title);
+            
+            const chiefComplaint = currentStructuredNotes && currentStructuredNotes.chiefComplaint ? currentStructuredNotes.chiefComplaint : (currentVisit.symptoms.length ? currentVisit.symptoms[0].name : '');
+            const freeText = currentStructuredNotes && currentStructuredNotes.freeText ? currentStructuredNotes.freeText : '';
+            const vitals = currentVisit.vitals || {};
+            const visitRecord = {
+                id: Date.now().toString(),
+                patientId: currentPatient.id,
+                patientName: currentPatient.name,
+                date: new Date().toISOString().slice(0, 10),
+                symptoms: currentVisit.symptoms.map(s => s.name),
+                dangerSigns: currentVisit.dangerSigns || [],
+                treatments: acceptedTreatments,
+                followUpDays: selectedFollowup != null ? selectedFollowup : 0,
+                chiefComplaint: chiefComplaint,
+                freeText: freeText,
+                photoBefore: currentVisit.photoBefore || null,
+                photoAfter: currentVisit.photoAfter || null,
+                vitals: {
+                    temperature: vitals.temperature,
+                    weightKg: vitals.weightKg,
+                    muac: vitals.muac,
+                    respiratoryRate: vitals.respiratoryRate,
+                    pulse: vitals.pulse,
+                    bloodPressure: vitals.bloodPressure
+                }
+            };
+            
+            visits.unshift(visitRecord);
+            saveToStorage(STORAGE_KEYS.visits, visits);
+            pendingSync++;
+            saveToStorage(STORAGE_KEYS.pendingSync, pendingSync);
+            updateSyncStatus();
+            
+            const duration = '4 minutes';
+            const fu = selectedFollowup != null ? selectedFollowup : 0;
+            document.getElementById('success-message').textContent = 
+                `${currentPatient.name}\nDuration: ${duration}${fu ? `\nFollow-up: ${fu} days` : ''}`;
+            
+            showScreen('success');
+        }
+        
+        function resetAndGoHome() {
+            currentPatient = null;
+            currentVisit = { symptoms: [], vitals: {}, dangerSigns: [], photoBefore: null, photoAfter: null };
+            currentSuggestions = [];
+            currentStructuredNotes = null;
+            selectedFollowup = null;
+            suggestedFollowUpDays = null;
+            screenHistory.length = 0;
+            screenHistory.push('home');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('home-screen').classList.add('active');
+            document.getElementById('main-header').classList.remove('hidden');
+            updateHeaderProfile();
+            updateWelcomeBlock();
+            renderRecentPatients();
+            renderRecentVisits();
+            document.querySelector('.back-btn').classList.toggle('visible', false);
+            const h1 = document.querySelector('.header h1');
+            if (h1) h1.textContent = 'Afya Assistant';
+        }
+        
+        function updateSyncStatus() {
+            const el = document.getElementById('sync-status') || document.querySelector('.sync-status');
+            if (el) el.textContent = pendingSync > 0 ? `Saved on device · ${pendingSync} to sync` : 'Synced';
+        }
+        
+        // Expose functions to global scope so inline onclick handlers work
+        window.showScreen = showScreen;
+        window.goBack = goBack;
+        window.createPatient = createPatient;
+        window.selectSex = selectSex;
+        window.toggleVoice = toggleVoice;
+        window.answerDanger = answerDanger;
+        window.toggleSymptom = toggleSymptom;
+        window.proceedToStructuredNotes = proceedToStructuredNotes;
+        window.proceedToSuggestions = proceedToSuggestions;
+        window.proceedToSummary = proceedToSummary;
+        window.selectFollowup = selectFollowup;
+        window.completeVisit = completeVisit;
+        window.resetAndGoHome = resetAndGoHome;
+        window.confirmSkip = confirmSkip;
+        window.selectPatient = selectPatient;
+        window.openPatientProfile = openPatientProfile;
+        window.startVisitFromProfile = startVisitFromProfile;
+        window.removeSymptom = removeSymptom;
+        window.acceptSuggestion = acceptSuggestion;
+        window.openSkipModal = openSkipModal;
+        window.searchPatients = searchPatients;
+        window.loginAs = loginAs;
+        window.showChwSetup = showChwSetup;
+        window.saveChwProfileAndGoHome = saveChwProfileAndGoHome;
+        window.handleChwPhotoSelect = handleChwPhotoSelect;
+        window.logout = logout;
+        window.openDoctorVisitDetail = openDoctorVisitDetail;
+        window.handlePhotoInput = handlePhotoInput;
+        window.clearPhoto = clearPhoto;
+        
+        // ==================== INWORLD AI ====================
+        let inworldSession = null;
+        let inworldConnected = false;
+        
+        function saveInworldSettings() {
+            const apiKey = document.getElementById('inworld-api-key').value.trim();
+            const workspaceId = document.getElementById('inworld-workspace-id').value.trim();
+            const characterId = document.getElementById('inworld-character-id').value.trim();
+            
+            if (!apiKey) {
+                alert('Please enter your Inworld API key');
+                return;
+            }
+            
+            const settings = { apiKey, workspaceId, characterId };
+            localStorage.setItem('afya_inworld_settings', JSON.stringify(settings));
+            alert('Inworld AI settings saved!');
+            closeInworldSettingsModal();
+        }
+        
+        function openInworldSettings() {
+            const settings = JSON.parse(localStorage.getItem('afya_inworld_settings') || '{}');
+            document.getElementById('inworld-api-key').value = settings.apiKey || '';
+            document.getElementById('inworld-workspace-id').value = settings.workspaceId || '';
+            document.getElementById('inworld-character-id').value = settings.characterId || '';
+            document.getElementById('inworld-settings-modal').classList.add('visible');
+        }
+        
+        function closeInworldSettingsModal() {
+            document.getElementById('inworld-settings-modal').classList.remove('visible');
+        }
+        
+        async function initializeInworldSession() {
+            const settings = JSON.parse(localStorage.getItem('afya_inworld_settings') || '{}');
+            
+            if (!settings.apiKey) {
+                console.log('Inworld API key not configured');
+                return false;
+            }
+            
+            try {
+                // Initialize Inworld session using Web API
+                // This would typically use your backend to create a session token
+                const response = await fetch('https://api.inworld.ai/session/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        characterId: settings.characterId || 'default',
+                        workspaceId: settings.workspaceId
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to initialize Inworld session:', response.statusText);
+                    return false;
+                }
+                
+                inworldConnected = true;
+                return true;
+            } catch (error) {
+                console.error('Inworld initialization error:', error);
+                return false;
+            }
+        }
+        
+        async function sendToInworldAI(userMessage) {
+            const settings = JSON.parse(localStorage.getItem('afya_inworld_settings') || '{}');
+            
+            if (!settings.apiKey || !inworldConnected) {
+                console.log('Inworld not configured or connected');
+                return null;
+            }
+            
+            try {
+                const response = await fetch('https://api.inworld.ai/message/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${settings.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        text: userMessage,
+                        characterId: settings.characterId || 'default'
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to get Inworld response:', response.statusText);
+                    return null;
+                }
+                
+                const data = await response.json();
+                return data.response || null;
+            } catch (error) {
+                console.error('Inworld request error:', error);
+                return null;
+            }
+        }
+        
+        window.openInworldSettings = openInworldSettings;
+        window.closeInworldSettingsModal = closeInworldSettingsModal;
+        window.saveInworldSettings = saveInworldSettings;
+
+        // ==================== INIT ====================
+        (function applyInitialScreen() {
+            const header = document.getElementById('main-header');
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            if (!currentUser) {
+                document.getElementById('login-screen').classList.add('active');
+                if (header) header.classList.add('hidden');
+                screenHistory.length = 0;
+                screenHistory.push('login');
+                updateSyncStatus();
+                return;
+            }
+            if (header) header.classList.remove('hidden');
+            updateHeaderProfile();
+            screenHistory.length = 0;
+            if (currentUser === 'Doctor') {
+                screenHistory.push('doctor-home');
+                document.getElementById('doctor-home-screen').classList.add('active');
+                renderDoctorVisitsList();
+            } else {
+                screenHistory.push('home');
+                document.getElementById('home-screen').classList.add('active');
+                updateWelcomeBlock();
+                renderRecentPatients();
+                renderRecentVisits();
+            }
+            updateSyncStatus();
+        })();
+        
+        // Close modal on outside click
+        document.getElementById('skip-modal').addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                document.getElementById('skip-modal').classList.remove('visible');
+            }
+        });
+        
+        } catch (err) {
+            document.body.innerHTML = '<div class="header"><h1>Afya Assistant</h1></div><div style="padding: 20px; color: #c62828;"><p><strong>Something went wrong.</strong></p><p>Open the browser console (F12) to see the error.</p><p>' + String(err.message) + '</p></div>';
+        }
+        })();
+    </script>
+</body>
+</html>

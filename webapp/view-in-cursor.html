@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Afya – Open in Cursor</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            max-width: 480px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 { color: #2e7d32; font-size: 24px; }
+        p { color: #333; line-height: 1.6; }
+        .step {
+            background: white;
+            padding: 16px;
+            margin: 12px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4caf50;
+        }
+        code { background: #eee; padding: 2px 6px; border-radius: 4px; }
+        a { color: #1976d2; }
+    </style>
+</head>
+<body>
+    <h1>Afya Assistant</h1>
+    <p>To see the app <strong>inside Cursor</strong>:</p>
+    
+    <div class="step">1. Make sure the server is running (Terminal: <code>cd webapp && python -m http.server 5500</code>)</div>
+    <div class="step">2. Press <code>Ctrl+Shift+P</code> (Windows) or <code>Cmd+Shift+P</code> (Mac)</div>
+    <div class="step">3. Type <strong>Simple Browser</strong></div>
+    <div class="step">4. Choose <strong>Simple Browser: Show</strong></div>
+    <div class="step">5. Enter: <code>http://localhost:5500</code></div>
+    
+    <p style="margin-top: 24px;">Or click to open in system browser: <a href="http://localhost:5500" target="_blank">http://localhost:5500</a></p>
+</body>
+</html>
