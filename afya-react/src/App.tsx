@@ -5,6 +5,7 @@ import { MetricsGrid } from './components/MetricsGrid'
 import { QuickActions } from './components/QuickActions'
 import { PatientsList } from './components/PatientsList'
 import { ClinicalGuidance } from './components/ClinicalGuidance'
+import { VoiceAssistant } from './components/VoiceAssistant'
 import { Card } from './components/Card'
 import { TrendingUp, AlertCircle, Users, Zap } from 'lucide-react'
 import './App.css'
@@ -173,6 +174,11 @@ function App() {
                 <h1 className="text-3xl font-bold text-gray-900">Clinical Guidance</h1>
                 <ClinicalGuidance />
               </div>
+            )}
+
+            {/* Voice Assistant View */}
+            {activeTab === 'assistant' && (
+              <VoiceAssistant />
             )}
 
             {/* Reports View */}

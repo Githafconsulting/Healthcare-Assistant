@@ -1,4 +1,4 @@
-import { Home, Users, BookOpen, BarChart3, Settings, LogOut, MessageCircle, Zap } from 'lucide-react';
+import { Home, Users, BookOpen, BarChart3, Settings, LogOut, MessageCircle, Zap, Mic } from 'lucide-react';
 
 interface SidebarProps {
   activeTab?: string;
@@ -9,6 +9,7 @@ export function Sidebar({ activeTab = 'dashboard', onTabChange }: SidebarProps) 
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'patients', label: 'My Patients', icon: Users },
+    { id: 'assistant', label: 'Voice Assistant', icon: Mic },
     { id: 'guidance', label: 'Clinical Guidance', icon: BookOpen },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'messaging', label: 'Messaging', icon: MessageCircle },
